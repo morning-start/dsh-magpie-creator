@@ -7,6 +7,11 @@
     "type": "git",
     "url": "git+https://github.com/morning-start/dsh-magpie-creator.git"
   },
+  "bugs": {
+    "url": "https://github.com/morning-start/dsh-magpie-creator/issues"
+  },
+  "homepage": "https://github.com/morning-start/dsh-magpie-creator#readme",
+  "author": "morning-start",
   "publishConfig": {
     "access": "public",
     "provenance": true
