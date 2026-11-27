@@ -179,6 +179,60 @@ describe('a package that is several kinds at once', () => {
   })
 })
 
+describe('middleware hook conventions', () => {
+  const middlewarePackage = (source) =>
+    makePackage({
+      'package.json': { name: '@magpie-community/middleware-guard', version: '0.1.0', magpie: { middleware: './guard.middleware.js' } },
+      'guard.middleware.js': source,
+    })
+  const mwRules = (dir) => rules(checkPackage(dir)).filter((r) => r.startsWith('middleware-') && r !== 'middleware-usage')
+
+  test('ctx.reject in onRequest and onProvider is right', () => {
+    assert.deepEqual(mwRules(middlewarePackage('export function onRequest(body, ctx) {\n  ctx.reject(403, "no")\n}\nexport function onProvider(body, ctx) {\n  ctx.reject(400, "no")\n}\n')), [])
+  })
+
+  test('ctx.reject in onEvent is reported, because the request has gone', () => {
+    const dir = middlewarePackage('export function onEvent(ev, ctx) {\n  ctx.reject(403, "no")\n}\n')
+    assert.ok(mwRules(dir).includes('middleware-reject'))
+  })
+
+  test('ctx.reject in onResponse is reported', () => {
+    const dir = middlewarePackage('export function onResponse(reply, ctx) {\n  ctx.reject(500, "no")\n}\n')
+    assert.ok(mwRules(dir).includes('middleware-reject'))
+  })
+
+  test('ctx.reject in onAccount is reported, pointing at skip', () => {
+    const dir = middlewarePackage('export function onAccount(account, ctx) {\n  ctx.reject(403, "no")\n}\n')
+    const report = checkPackage(dir)
+    const finding = report.findings.find((f) => f.rule === 'middleware-reject')
+    assert.ok(finding)
+    assert.match(finding.message, /skip: true/)
+  })
+
+  test('a guard-clause return before the reject is not a finding', () => {
+    const dir = middlewarePackage('export function onRequest(body, ctx) {\n  if (!body) return\n  ctx.reject(403, "no")\n  return undefined\n}\n')
+    assert.deepEqual(mwRules(dir), [])
+  })
+
+  test('a return after the reject on the same path warns', () => {
+    const dir = middlewarePackage('export function onRequest(body, ctx) {\n  ctx.reject(403, "no")\n  return body\n}\n')
+    assert.ok(mwRules(dir).includes('middleware-reject-return'))
+  })
+
+  test('{ skip: true } in onAccount is right', () => {
+    assert.deepEqual(mwRules(middlewarePackage('export function onAccount(account, ctx) {\n  return { skip: true }\n}\n')), [])
+  })
+
+  test('{ skip: true } anywhere else is reported', () => {
+    const dir = middlewarePackage('export function onRequest(body, ctx) {\n  return { skip: true }\n}\n')
+    assert.ok(mwRules(dir).includes('middleware-skip'))
+  })
+
+  test('{ skip: false } elsewhere is not a finding', () => {
+    assert.deepEqual(mwRules(middlewarePackage('export function onRequest(body, ctx) {\n  return { skip: false }\n}\n')), [])
+  })
+})
+
 describe('routing strategies', () => {
   const routing = (gatewaySource) =>
     makePackage({

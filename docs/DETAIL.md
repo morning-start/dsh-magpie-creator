@@ -120,6 +120,16 @@ after a request.
 **An agent's `startup`**: it must give `config`, `model` and `keys`; without
 `keys` magpie has nowhere to point the agent at its provider.
 
+**A middleware's `ctx.reject` and `{ skip: true }`**: written in the wrong hook,
+magpie silently treats the hook as absent — the middleware still installs, still
+shows in Settings, and never takes effect. `ctx.reject` only means something
+before routing: `onRequest` and `onProvider` may reject, while `onEvent` and
+`onResponse` (the request has gone), `onAccount` (use `{ skip: true }`) and
+`onUsage` (an observer) fail. `{ skip: true }` is read by `onAccount` alone;
+returned elsewhere it is just a new request body, so it fails. A `return body`
+after the reject on the same path warns — the rejection is the answer — while a
+guard clause returning before it is ordinary and not reported.
+
 **`registry.json` `kind` with `providers`**: the two together are an error. A
 provider's entry writes `providers` and no `kind`; every other kind writes `kind`
 and no `providers`. The page groups by `kind`, so both at once lands the card in
@@ -131,13 +141,9 @@ here, so "all clear" does not mean these:
 - **moejs imports**: only static `from "<bare name>"`, `from "node:…"` and
   `require()` are caught; `import("./dep.js")`, `import type` and other dynamic
   forms pass.
-- **Strategy values**: the names and their grouping are verified, but not that a
-  value is a function (or an object with `order`) that survives the 20 ms budget.
 - **Hook return shapes**: what a hook may not change is checked; whether the body
   it returns is well-formed is not (`undefined` keeps the request, but `null`, a
   string or a partial object cannot be judged statically).
-- **Middleware hook conventions**: `ctx.reject` only works before routing;
-  `onAccount` returns `{ skip: true }`; the signatures are not checked.
 - **Pages**: permissions are limited to `usage:summary` and `providers:list`;
   `magpie.openPlugin`'s 1.5 s rate limit is not checked.
 - **Panels**: `slot` must be one of four and at most eight panels exist; the
