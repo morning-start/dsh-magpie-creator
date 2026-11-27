@@ -1,0 +1,14 @@
+{
+  "name": "{{packageName}}",
+  "version": "0.1.0",
+  "description": "{{description}}",
+  "type": "module",
+  "main": "./index.mjs",
+  "files": ["index.mjs", "README.md"],
+  "keywords": ["magpie", "opencode", "opencode-plugin", "{{short}}"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/OWNER/REPO.git", "directory": "packages/{{short}}" },
+  "magpie": {
+    "maxConcurrency": 4
+  }
+}

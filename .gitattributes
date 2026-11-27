@@ -1,0 +1,21 @@
+# Normalize line endings: committed as LF, checked out as-is on this platform.
+* text=auto eol=lf
+
+# Source
+*.js    text
+*.mjs   text
+*.yml   text
+*.yaml  text
+*.json  text
+*.md    text
+*.svg   text
+
+# Keep the LF rule above, but let these be binary.
+*.png   binary
+*.jpg   binary
+*.gif   binary
+*.webp  binary
+
+# Git's own bookkeeping.
+.gitignore        text
+.gitattributes    text

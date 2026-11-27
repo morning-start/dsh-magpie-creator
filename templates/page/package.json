@@ -1,0 +1,19 @@
+{
+  "name": "{{packageName}}",
+  "version": "0.1.0",
+  "description": "{{description}}",
+  "files": ["page", "README.md"],
+  "keywords": ["magpie", "magpie-page", "{{short}}"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/OWNER/REPO.git", "directory": "packages/{{short}}" },
+  "magpie": {
+    "page": {
+      "title": "{{title}}",
+      "titles": { "zh": "{{titleZh}}" },
+      "file": "page/index.html",
+      "icon": "page/icon.svg"
+    },
+    "permissions": ["usage:summary"],
+    "options": {}
+  }
+}

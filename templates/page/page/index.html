@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{title}}</title>
+    <!-- The bridge is served beside every page: it gives magpie.ready, .read,
+         .options and the theme. Scripts must be files; the page's policy allows
+         no inline script and no network. -->
+    <script src="_magpie/bridge.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="head">
+      <img class="mark" src="icon.svg" alt="" aria-hidden="true" />
+      <div>
+        <h1>{{title}}</h1>
+        <p class="lede" data-t="lede">{{description}}</p>
+      </div>
+    </header>
+
+    <section class="tiles" id="tiles" aria-live="polite"></section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2 data-t="models">Top models</h2>
+        <div class="seg" id="periods" role="tablist" aria-label="Period">
+          <button type="button" data-period="today" role="tab" aria-selected="true">Today</button>
+          <button type="button" data-period="7d" role="tab" aria-selected="false">7 days</button>
+          <button type="button" data-period="30d" role="tab" aria-selected="false">30 days</button>
+        </div>
+      </div>
+      <ol class="models" id="models"></ol>
+      <p class="empty" id="empty" hidden data-t="empty">Nothing recorded for this period.</p>
+    </section>
+
+    <p class="error" id="error" role="alert" hidden></p>
+  </body>
+</html>

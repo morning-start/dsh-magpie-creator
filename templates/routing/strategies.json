@@ -1,0 +1,33 @@
+[
+  {
+    "name": "the account with the most room leads",
+    "strategy": "most-room",
+    "pool": "acme",
+    "seats": [
+      { "key": "a", "known": true, "used": 90 },
+      { "key": "b", "known": true, "used": 10 },
+      { "key": "c", "known": true, "used": 50 }
+    ],
+    "expect": ["b", "c", "a"]
+  },
+  {
+    "name": "a resting seat goes last",
+    "strategy": "most-room",
+    "seats": [
+      { "key": "a", "known": true, "used": 5, "resting": true },
+      { "key": "b", "known": true, "used": 80 }
+    ],
+    "expect": ["b", "a"]
+  },
+  {
+    "name": "fill-then-next keeps a seat under the ceiling first",
+    "strategy": "fill-then-next",
+    "options": { "ceiling": 80 },
+    "seats": [
+      { "key": "full", "known": true, "used": 95 },
+      { "key": "room", "known": true, "used": 40 },
+      { "key": "unknown", "known": false, "used": 0 }
+    ],
+    "expect": ["unknown", "room", "full"]
+  }
+]

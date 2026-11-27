@@ -1,0 +1,41 @@
+[
+  {
+    "name": "an alias is sent as the real model",
+    "options": { "alias": { "from": "fast", "to": "deepseek/deepseek-chat" } },
+    "ctx": { "protocol": "chat", "model": "fast" },
+    "request": { "model": "fast", "messages": [{ "role": "user", "content": "hi" }] },
+    "expect_request": { "model": "deepseek/deepseek-chat", "messages": [{ "role": "user", "content": "hi" }] }
+  },
+  {
+    "name": "a model the user blocked is refused",
+    "options": { "blocked": ["openai/gpt-5.5"] },
+    "ctx": { "protocol": "chat", "model": "openai/gpt-5.5" },
+    "request": { "model": "openai/gpt-5.5", "messages": [] },
+    "reject": { "status": 403, "message": "blocked" }
+  },
+  {
+    "name": "a request with nothing to change passes as it came",
+    "ctx": { "protocol": "anthropic", "model": "claude/claude-opus-5-5" },
+    "request": { "model": "claude/claude-opus-5-5", "messages": [{ "role": "user", "content": "hi" }] },
+    "expect_request": { "model": "claude/claude-opus-5-5", "messages": [{ "role": "user", "content": "hi" }] }
+  },
+  {
+    "name": "a streamed event is rewritten",
+    "ctx": { "protocol": "chat", "model": "deepseek/deepseek-chat", "stream": true },
+    "events": [
+      { "data": { "choices": [{ "index": 0, "delta": { "content": "a TODO here" } }] } },
+      { "data": { "choices": [{ "index": 0, "delta": {}, "finish_reason": "stop" }] } }
+    ],
+    "expect_events": [
+      { "choices": [{ "index": 0, "delta": { "content": "a TO-DO here" } }] },
+      { "choices": [{ "index": 0, "delta": {}, "finish_reason": "stop" }] }
+    ]
+  },
+  {
+    "name": "a whole reply passes through onResponse",
+    "ctx": { "protocol": "chat", "model": "deepseek/deepseek-chat" },
+    "status": 200,
+    "response": { "choices": [{ "message": { "content": "TODO" } }] },
+    "expect_response": { "choices": [{ "message": { "content": "TODO" } }] }
+  }
+]

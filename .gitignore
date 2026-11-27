@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Local scratch: generated plugins, sandboxes, dumps, doc scrapes
+tmp/
+sandboxes/
+.magpie/
+.magpie-sandbox/
+
+# Sandbox state and generated plugins from magpie_sandbox / magpie_plugin_new
+magpie-sandbox/
+.sandbox/
+sandbox/
+
+# Build and release leftovers
+dist/
+*.tgz
+.npm/
+coverage/
+
+# OS and editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# DSH local config and artefacts
+.dsh/
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+*.rej

@@ -1,0 +1,14 @@
+{
+  "name": "{{packageName}}",
+  "version": "0.1.0",
+  "description": "{{description}}",
+  "type": "module",
+  "files": ["{{short}}.hooks.mjs", "README.md"],
+  "keywords": ["magpie", "magpie-hooks", "{{short}}"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/OWNER/REPO.git", "directory": "packages/{{short}}" },
+  "magpie": {
+    "hooks": "./{{short}}.hooks.mjs",
+    "options": {}
+  }
+}

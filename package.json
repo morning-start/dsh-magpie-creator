@@ -1,0 +1,69 @@
+{
+  "name": "dsh-magpie-creator",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Magpie plugin development toolkit for DeepSeek Harness: a Magpie mode (agent preset) plus tools, skills and templates to build, debug, test and release magpie plugins (providers, gateway middleware, routings, tools, pages, agents, hooks).",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/morning-start/dsh-magpie-creator.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "exports": {
+    ".": "./index.js",
+    "./tools": "./tools/index.js",
+    "./lib/*": "./lib/*",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "new": "node scripts/new-plugin.mjs",
+    "check": "node scripts/check-plugin.mjs",
+    "check:load": "node scripts/check-plugin.mjs --load",
+    "check:registry": "node scripts/check-registry.mjs",
+    "sandbox": "node scripts/sandbox.mjs",
+    "try": "node scripts/try.mjs",
+    "release": "node scripts/release.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "test": "node --test \"test/*.test.mjs\"",
+    "check:patch": "node scripts/check-patch.mjs .",
+    "check:skills": "node scripts/check-skills.mjs",
+    "check:project": "node scripts/check-project.mjs ."
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "tools",
+    "skills",
+    "templates",
+    "scripts",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "icon.svg",
+    "market.json",
+    "README.md"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "magpie",
+    "magpie-plugin",
+    "opencode-plugin",
+    "gateway-middleware",
+    "agent-preset"
+  ],
+  "engines": {
+    "dsh": ">=0.2.2-rc.5"
+  },
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

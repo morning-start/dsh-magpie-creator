@@ -1,0 +1,170 @@
+{
+  "rules": [
+    {
+      "id": "patch-present",
+      "type": "file-exists",
+      "path": "cordis.patch.yml",
+      "message": "the bundle declares its patch layer"
+    },
+    {
+      "id": "entry-present",
+      "type": "file-exists",
+      "path": "index.js",
+      "message": "the Host half exists"
+    },
+    {
+      "id": "tools-present",
+      "type": "file-exists",
+      "path": "tools/index.js",
+      "message": "the preset-scoped tools exist"
+    },
+    {
+      "id": "lib-present",
+      "type": "file-exists",
+      "path": "lib/index.mjs",
+      "message": "the shared lib exists"
+    },
+    {
+      "id": "icon-present",
+      "type": "file-exists",
+      "path": "icon.svg",
+      "message": "the plugin has its own icon"
+    },
+    {
+      "id": "market-present",
+      "type": "file-exists",
+      "path": "market.json",
+      "message": "the market entry exists"
+    },
+    {
+      "id": "bundle-patch-declared",
+      "type": "json-field",
+      "path": "package.json",
+      "field": "dsh.bundle.patch",
+      "equals": "./cordis.patch.yml"
+    },
+    {
+      "id": "tools-exported",
+      "type": "file-contains",
+      "path": "package.json",
+      "contains": ["\"./tools\": \"./tools/index.js\""]
+    },
+    {
+      "id": "package-name",
+      "type": "json-field",
+      "path": "package.json",
+      "field": "name",
+      "equals": "dsh-magpie-creator"
+    },
+    {
+      "id": "package-type",
+      "type": "json-field",
+      "path": "package.json",
+      "field": "type",
+      "equals": "module"
+    },
+    {
+      "id": "market-name",
+      "type": "json-field",
+      "path": "market.json",
+      "field": "name",
+      "equals": "Magpie"
+    },
+    {
+      "id": "market-repository",
+      "type": "json-field",
+      "path": "market.json",
+      "field": "repository"
+    },
+    {
+      "id": "market-license",
+      "type": "json-field",
+      "path": "market.json",
+      "field": "license",
+      "equals": "MIT"
+    },
+    {
+      "id": "shipped-files",
+      "type": "files-listed",
+      "manifest": "package.json",
+      "exclude": [
+        ".gitignore",
+        "checks.json",
+        "test",
+        "tmp",
+        "node_modules",
+        "*.log"
+      ]
+    },
+    {
+      "id": "locale-parity",
+      "type": "locale-parity",
+      "files": ["locale/en.json", "locale/zh.json"]
+    },
+    {
+      "id": "doc-links",
+      "type": "doc-links",
+      "skip": ["node_modules", ".git", "tmp", "test"]
+    },
+    {
+      "id": "skills-name-their-folder",
+      "type": "frontmatter-name",
+      "path": "skills/magpie-plugin-new/SKILL.md",
+      "equals": "magpie-plugin-new"
+    },
+    {
+      "id": "skills-debug",
+      "type": "frontmatter-name",
+      "path": "skills/magpie-plugin-debug/SKILL.md",
+      "equals": "magpie-plugin-debug"
+    },
+    {
+      "id": "skills-provider",
+      "type": "frontmatter-name",
+      "path": "skills/magpie-plugin-provider/SKILL.md",
+      "equals": "magpie-plugin-provider"
+    },
+    {
+      "id": "skills-gateway",
+      "type": "frontmatter-name",
+      "path": "skills/magpie-plugin-gateway/SKILL.md",
+      "equals": "magpie-plugin-gateway"
+    },
+    {
+      "id": "skills-tools-agent",
+      "type": "frontmatter-name",
+      "path": "skills/magpie-plugin-tools-agent/SKILL.md",
+      "equals": "magpie-plugin-tools-agent"
+    },
+    {
+      "id": "skills-page",
+      "type": "frontmatter-name",
+      "path": "skills/magpie-plugin-page/SKILL.md",
+      "equals": "magpie-plugin-page"
+    },
+    {
+      "id": "skills-sandbox",
+      "type": "frontmatter-name",
+      "path": "skills/magpie-plugin-sandbox/SKILL.md",
+      "equals": "magpie-plugin-sandbox"
+    },
+    {
+      "id": "skills-release",
+      "type": "frontmatter-name",
+      "path": "skills/magpie-plugin-release/SKILL.md",
+      "equals": "magpie-plugin-release"
+    },
+    {
+      "id": "lib-logs-nothing",
+      "type": "no-console",
+      "root": "lib",
+      "level": "warn"
+    },
+    {
+      "id": "tools-log-nothing",
+      "type": "no-console",
+      "root": "tools",
+      "level": "warn"
+    }
+  ]
+}

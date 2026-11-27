@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Magpie 模式",
+    "description": "面向 DeepSeek Harness 的 magpie 插件开发：一个「Magpie」模式（agent 预设），带 4 个工具、8 个 skill、7 套模板和一个沙箱。magpie_doctor 报告 magpie、它的网关和 Bun 插件宿主能不能用；magpie_plugin_new 按七种插件之一生成包骨架（供应商、网关中间件、路由、工具、页面、Agent、异步网关钩子）；magpie_plugin_check 按 magpie 的加载规则检查一个包，报告会让它装不上或者静默做别的事的问题；magpie_sandbox 起一个自己的 HOME、配置目录和网关端口的 magpie，开发中的插件永远不碰用户自己的登录、供应商和用量；magpie_templates 列出模板以及每种跑在哪个运行时。判断在 skill 里：从「我想加点什么」定形态的访谈、供应商的登录与额度钩子、中间件和路由的 moejs 限制、工具与 Agent、窗口里的页面、沙箱测试、调试，以及发布（npm、magpie:// 链接、registry.json 条目、GitHub 标签）。安装这个包不覆写任何自带预设：它插入一个新的，所以其他模式组合不受影响。检查是静态只读的，证明不了真实厂商的登录能走通；桌面版把 DSH 装在 app.asar 里，和 DSH 自带预设比对需要一份可读的副本。",
+    "detail": "docs/DETAIL.zh.md"
+  }
+}

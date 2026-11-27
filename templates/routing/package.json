@@ -1,0 +1,14 @@
+{
+  "name": "{{packageName}}",
+  "version": "0.1.0",
+  "description": "{{description}}",
+  "type": "module",
+  "files": ["{{short}}.gateway.js", "README.md"],
+  "keywords": ["magpie", "magpie-middleware", "magpie-routing", "{{short}}"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/OWNER/REPO.git", "directory": "packages/{{short}}" },
+  "magpie": {
+    "gateway": "./{{short}}.gateway.js",
+    "options": {}
+  }
+}
