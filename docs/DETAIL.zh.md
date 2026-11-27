@@ -67,11 +67,12 @@
 
 **`registry.json` 的 `kind` 与 `providers`**：两者同时出现判错。供应商条目写 `providers`、**没有** `kind`；其余形态写 `kind`、**没有** `providers`，而插件页是按 `kind` 分组的，同时写会让卡片落到分组里、`providers` 谁也不读。
 
+**moejs 的导入**：只能静态、相对地导入——裸包名、`require()`、`node:` 内置和**任何** `import(…)`（含 `import("./x.mjs")`）都判 `fail`；`import type` 也不行（moejs 按 JavaScript 解析）。反过来，相对导入是它**唯一**能解析的形式，所以每个 `./x` `../y` 都必须指向包内真实存在的文件（省扩展名按 magpie/Node 的顺序补 `.mjs`/`.js`/`.ts`/`.mts`/index）。社区 65 个包里 19 条相对导入全部解析，这条规则没有误报。
+
 **中间件的 `ctx.reject` 与 `{skip: true}`**：这两处写错时 magpie 会静默当成「钩子不存在」，中间件照样装上、照样出现在设置里，却从不生效。`ctx.reject` 只在**路由之前**有意义——只有 `onRequest` 和 `onProvider` 能拒绝；写进 `onEvent`/`onResponse`（请求已经发出去了）、`onAccount`（该用 `{ skip: true }`）或 `onUsage`（只是个观察者）都判 `fail`。`{ skip: true }` 只被 `onAccount` 读，别处返回它等于交出一个新请求体，判 `fail`。`ctx.reject` 之后**同一路径**再 `return body` 判 `warn`（拒绝本身就是答案，应该 `return undefined`）；reject 之前的分支提前 `return` 是正确的守卫写法，不报。
 
 **还没查的**（magpie 文档里有、检查器没有对应规则，所以全绿证明不了这些）：
 
-- **中间件 / 路由的导入**：文档说 moejs 里只能用相对路径导入，且没有 `node_modules`；检查器只认 `from "<裸包名>"`、`from "node:…"` 和 `require()`，`import("./dep.js")` 这种动态导入、`import type` 也一起漏过去。
 - **钩子的返回值形状**：只查了「不能改哪些字段」，不验证返回的 body 本身合不合法（比如 `undefined` 保留原请求这条是对的，但 `null`、字符串之类没法静态判断）。
 - **页面**：`magpie.permissions` 现在只认 `usage:summary` 和 `providers:list`；页面读不到密钥/账号，但 `openPlugin` 是 1.5 秒一次的限流——检查器不查调用频率。
 - **面板槽位**：只查 `slot` 在四个里；文档说 `provider` 槽位对不提供 Provider 的插件也出现、最多 8 个（这个查了）、`<html>` 最高 2400px（只查了不给 `html`/`body` 固定高度）。

@@ -179,6 +179,46 @@ describe('a package that is several kinds at once', () => {
   })
 })
 
+describe('a moejs module\u2019s imports', () => {
+  const middlewarePackage = (source, extra = {}) =>
+    makePackage({
+      'package.json': { name: '@magpie-community/middleware-imp', version: '0.1.0', magpie: { middleware: './imp.middleware.js' } },
+      'imp.middleware.js': source,
+      ...extra,
+    })
+  const moejsRules = (dir) => rules(checkPackage(dir), 'fail').filter((r) => r.startsWith('moejs-'))
+
+  test('a relative import that exists passes', () => {
+    const dir = middlewarePackage('import { a } from "./helper.mjs"\nexport function onRequest(body) {}\n', { 'helper.mjs': 'export const a = 1\n' })
+    assert.deepEqual(moejsRules(dir), [])
+  })
+
+  test('an extensionless relative import resolves the way magpie does', () => {
+    const dir = middlewarePackage('import { a } from "./helper"\nexport function onRequest(body) {}\n', { 'helper.mjs': 'export const a = 1\n' })
+    assert.deepEqual(moejsRules(dir), [])
+  })
+
+  test('a relative import to nothing is reported', () => {
+    const dir = middlewarePackage('import { a } from "./missing.mjs"\nexport function onRequest(body) {}\n')
+    assert.ok(moejsRules(dir).includes('moejs-import'))
+  })
+
+  test('a relative import that leaves the package is reported', () => {
+    const dir = middlewarePackage('import { a } from "../outside/a.mjs"\nexport function onRequest(body) {}\n')
+    assert.ok(moejsRules(dir).includes('moejs-import'))
+  })
+
+  test('a dynamic import is reported', () => {
+    const dir = middlewarePackage('export async function onRequest(body) { await import("./x.mjs") }\n')
+    assert.ok(moejsRules(dir).includes('moejs-import'))
+  })
+
+  test('import type is reported', () => {
+    const dir = middlewarePackage('import type { B } from "./t.d.ts"\nexport function onRequest(body) {}\n')
+    assert.ok(moejsRules(dir).includes('moejs-import'))
+  })
+})
+
 describe('middleware hook conventions', () => {
   const middlewarePackage = (source) =>
     makePackage({

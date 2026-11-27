@@ -120,6 +120,14 @@ after a request.
 **An agent's `startup`**: it must give `config`, `model` and `keys`; without
 `keys` magpie has nowhere to point the agent at its provider.
 
+**moejs imports**: a moejs module imports only statically and relatively — a
+bare package name, `require()`, a `node:` built-in and **any** `import(…)`
+(including `import("./x.mjs")`) fail, and so does `import type` (moejs parses
+JavaScript). A relative import is the one form it resolves, so every `./x` and
+`../y` must name a file inside the package, trying `.mjs`/`.js`/`.ts`/`.mts`/index
+in magpie's own order. Across the 65 community packages all 19 relative imports
+resolve, so this rule has no false alarms.
+
 **A middleware's `ctx.reject` and `{ skip: true }`**: written in the wrong hook,
 magpie silently treats the hook as absent — the middleware still installs, still
 shows in Settings, and never takes effect. `ctx.reject` only means something
@@ -138,9 +146,6 @@ a group where nobody reads the ids.
 **What it does not check yet** — rules magpie's docs state that have no rule
 here, so "all clear" does not mean these:
 
-- **moejs imports**: only static `from "<bare name>"`, `from "node:…"` and
-  `require()` are caught; `import("./dep.js")`, `import type` and other dynamic
-  forms pass.
 - **Hook return shapes**: what a hook may not change is checked; whether the body
   it returns is well-formed is not (`undefined` keeps the request, but `null`, a
   string or a partial object cannot be judged statically).
