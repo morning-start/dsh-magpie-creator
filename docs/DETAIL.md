@@ -221,6 +221,35 @@ A package published from its own repository leaves `community` out: it is then
 not in those groups, the search finds it by name, summary or publisher, and its
 card shows its npm publisher instead of the community badge.
 
+## Acceptance: letting magpie answer
+
+The static checks and `--load` both answer questions about the **source**. One
+question neither can answer is whether **magpie, once the package is installed,
+will actually call it.**
+
+`magpie_plugin_accept` (`node scripts/accept-plugin.mjs <dir>`) does exactly
+that: the static checks, then `magpie plugin add` in a sandbox of its own, then
+`magpie plugin --json`. For a middleware or routing the answer is magpie's own —
+it reports the hooks it will call:
+
+```
+✓ the package: no load-blocking finding
+✓ a sandbox: …\sandboxes\accept, its own HOME and port 3599
+✓ the install: magpie plugin add took the folder
+✓ the load: magpie lists 1 plugin entry
+✓ the hooks: magpie will call onRequest, onEvent, onResponse
+```
+
+A load failure is also magpie's words, not a guess: the reason in `plugin --json`
+is passed through unchanged — `SyntaxError: Unexpected identifier 'is'`, or
+`exports none of onRequest, onAccount, onProvider, onEvent, onResponse, strategies
+and onUsage`.
+
+**What it cannot prove** the report states itself: a sandbox has no provider
+credentials, so it can show neither that a vendor's sign-in works nor that a
+middleware changes a real request. What it does show — that the package
+installs, loads, and that magpie knows its hooks — was answered by nothing else.
+
 ## The sandbox
 
 `magpie_sandbox` is the only honest way to prove a plugin installs. It points

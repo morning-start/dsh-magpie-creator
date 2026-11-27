@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path'
 import { after, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { hookProblems, loadAndCheck } from '../lib/load.mjs'
+import { middlewareEntries, readListing } from '../lib/accept.mjs'
 
 const roots = []
 function makePackage(files) {
@@ -182,5 +183,38 @@ describe('a routing\u2019s strategies, called the way magpie calls them', () => 
   test('an onUsage that throws is reported', async () => {
     const dir = routingPackage('export const strategies = { g: { all: (pool, seats) => seats.map((_, i) => i) } }\nexport function onUsage() { throw new Error("usage") }\n')
     assert.ok((await loadAndCheck(dir)).problems.some((p) => p.includes('onUsage threw: usage')))
+  })
+})
+
+describe('reading what magpie plugin --json says', () => {
+  const listing = {
+    loaded: null,
+    middleware: {
+      'C:\\work\\guard': { hooks: ['onRequest', 'onEvent'], calls: 0, avgMicros: 0, failures: 0 },
+    },
+    plugins: [{ spec: 'C:\\work\\guard' }],
+    providers: null,
+  }
+
+  test('the real shape is one object, not a list', () => {
+    const parsed = readListing(JSON.stringify(listing))
+    assert.ok(parsed)
+    assert.equal(parsed.plugins.length, 1)
+  })
+
+  test('a middleware entry carries its hooks', () => {
+    const entries = middlewareEntries(listing)
+    assert.equal(entries.length, 1)
+    assert.deepEqual(entries[0].hooks, ['onRequest', 'onEvent'])
+  })
+
+  test('junk around the JSON is tolerated', () => {
+    assert.ok(readListing('some warning line\n' + JSON.stringify(listing)))
+    assert.equal(readListing('not json at all'), null)
+  })
+
+  test('a load error the entry carries is reported', () => {
+    const withError = { ...listing, middleware: { 'C:\\work\\guard': { hooks: [], failures: 1, error: 'SyntaxError: x' } } }
+    assert.equal(middlewareEntries(withError)[0].loadError, 'SyntaxError: x')
   })
 })

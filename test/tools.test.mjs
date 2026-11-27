@@ -42,9 +42,10 @@ const call = (name, args, exec = {}) => registered.get(name).execute(args, exec)
 const render = (name, value) => registered.get(name).output.render({}, value)[0].text
 
 describe('the tools are registered', () => {
-  test('all six, each with a description and a renderer', () => {
+  test('all seven, each with a description and a renderer', () => {
     assert.deepEqual([...registered.keys()].sort(), [
       'magpie_doctor',
+      'magpie_plugin_accept',
       'magpie_plugin_check',
       'magpie_plugin_new',
       'magpie_registry_entry',

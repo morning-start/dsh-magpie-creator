@@ -6,7 +6,7 @@ DSH 的「创造模式」管的是 DSH 自己的插件。这个包管的是另�
 
 装上它以后，新建任务时多一个 **Magpie** 模式，里面有：
 
-- 4 个工具：`magpie_doctor`、`magpie_plugin_new`、`magpie_plugin_check`、`magpie_sandbox`（外加 `magpie_templates`）；
+- 5 个工具：`magpie_doctor`、`magpie_plugin_new`、`magpie_plugin_check`、`magpie_sandbox`（外加 `magpie_templates`、`magpie_registry_entry`、`magpie_plugin_accept`）；
 - 8 个 skill：按「一类插件一个」拆开，模型只在需要时读；
 - 7 套模板：每种插件一个可以直接跑的最小实现，带测试；
 - 沙箱：一个不碰你自己 magpie 的独立 magpie。
@@ -54,6 +54,7 @@ Magpie 模式会：
 | `magpie_sandbox` | 独立 magpie：`create` / `install` / `list` / `login` / `test` / `status` / `command` / `remove` |
 | `magpie_templates` | 列出模板，以及每种跑在哪个运行时 |
 | `magpie_registry_entry` | 生成并校验 `registry.json` 条目（magpie 的插件页读的那份，一处类型不对就丢掉全部条目） |
+| `magpie_plugin_accept` | 让 magpie 自己回答：沙箱里装上、读 `plugin --json`、看它会调用哪些钩子 |
 
 ## 技能
 
@@ -95,6 +96,7 @@ node scripts/sandbox.mjs create dev
 node scripts/sandbox.mjs install dev ./my-plugin
 node scripts/sandbox.mjs list dev
 node scripts/try.mjs ./my-plugin            # 检查 + 沙箱 + 安装 + 列出加载结果
+node scripts/accept-plugin.mjs ./my-plugin  # 沙箱里真装一次，读 magpie 说它加载到了什么
 node scripts/release.mjs ./my-plugin        # 发版前检查 + registry 条目 + 发布命令
 node scripts/check-project.mjs .            # 这个项目自己
 npm test                                    # 78 个测试

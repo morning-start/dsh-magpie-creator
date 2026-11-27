@@ -36,7 +36,8 @@
     "test": "node --test \"test/*.test.mjs\"",
     "check:patch": "node scripts/check-patch.mjs .",
     "check:skills": "node scripts/check-skills.mjs",
-    "check:project": "node scripts/check-project.mjs ."
+    "check:project": "node scripts/check-project.mjs .",
+    "accept": "node scripts/accept-plugin.mjs ."
   },
   "files": [
     "index.js",

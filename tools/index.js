@@ -165,6 +165,40 @@ export function apply(ctx) {
   })
 
   register({
+    name: 'magpie_plugin_accept',
+    description:
+      'Prove a plugin installs: the only check that asks magpie itself rather than reading source. Runs the static checks, then in a sandbox of its own runs `magpie plugin add`, reads `magpie plugin --json` for a load error, and — for a middleware or routing — reports the hooks magpie says it will call. Touches only the sandbox folder, never the user\'s magpie. A sandbox has no provider credentials, so it cannot prove a vendor sign-in works or that a middleware changes a real request; the report says so.',
+    parameters: {
+      dir: { type: 'string', required: true, description: 'Absolute path to the package directory.' },
+      sandbox: { type: 'string', description: 'Sandbox name to install into. Defaults to "accept".' },
+      port: { type: 'number', description: 'The sandbox gateway port. Defaults to 3599.' },
+    },
+    output: {
+      schema: { type: 'string' },
+      render: (_args, value) => text(value),
+    },
+    async execute(args) {
+      const dir = resolve(String(args.dir ?? ''))
+      if (!existsSync(dir)) throw new Error(`${dir} does not exist`)
+      const { acceptPlugin } = await import('../lib/accept.mjs')
+      const report = await acceptPlugin(dir, {
+        sandbox: String(args.sandbox ?? 'accept'),
+        port: Number(args.port ?? 3599),
+      })
+      const lines = report.checks.map((check) => {
+        const mark = check.ok === true ? '✓' : check.ok === null ? '?' : '✗'
+        return `${mark} ${check.name}: ${check.detail}`
+      })
+      if (report.unproven.length) {
+        lines.push('', 'this sandbox cannot prove:')
+        for (const line of report.unproven) lines.push(`  - ${line}`)
+      }
+      lines.push('', report.failures.length ? `${report.failures.length} failure(s)` : '✓ magpie accepts this plugin')
+      return lines.join('\n')
+    },
+  })
+
+  register({
     name: 'magpie_sandbox',
     description:
       'A magpie of its own for testing a plugin, so the user\'s magpie, its sign-ins and its agents are never touched: its own HOME, config folder and gateway port. Actions: create (a folder and its state), install (magpie plugin add inside the sandbox), list (what the sandbox loaded), login (sign in inside the sandbox), test (one tiny request per API), remove (delete the sandbox folder), command (the shell lines that run magpie inside it). Never touches the user\'s magpie.',

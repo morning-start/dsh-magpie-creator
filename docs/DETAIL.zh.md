@@ -107,6 +107,24 @@
 
 从自己仓库发布的包不写 `community`：它就不在这些分组里，插件页的搜索按名字、简介或发布者能找到它，卡片显示它在 npm 上的发布者，不带 magpie 社区标记。
 
+## 验收：让 magpie 自己回答
+
+静态检查和 `--load` 回答的都是**源码**的问题。还有一个问题是它们都答不了的：**magpie 装上它以后，是不是真的会调用它。**
+
+`magpie_plugin_accept`（或 `node scripts/accept-plugin.mjs <包目录>`）做的就是这一件事：先跑静态检查，然后在自己的沙箱里 `magpie plugin add`，再读 `magpie plugin --json`。中间件和路由会得到 magpie 自己的答案——它报告会调用哪些钩子：
+
+```
+✓ the package: no load-blocking finding
+✓ a sandbox: …\sandboxes\accept, its own HOME and port 3599
+✓ the install: magpie plugin add took the folder
+✓ the load: magpie lists 1 plugin entry
+✓ the hooks: magpie will call onRequest, onEvent, onResponse
+```
+
+加载失败也是 magpie 说的，不是我们猜的——`plugin --json` 里带的原因原样传出来，比如 `SyntaxError: Unexpected identifier 'is'`，或者 `exports none of onRequest, onAccount, onProvider, onEvent, onResponse, strategies and onUsage`。
+
+**它证明不了的**，报告里会自己写明：沙箱里没有供应商凭据，所以既证明不了一个厂商的登录能走通，也证明不了中间件真的改写了某个请求。能证明的是“装得上、加载得了、magpie 认得出它的钩子”——这三件事之前没有任何工具能回答。
+
 ## 沙箱
 
 `magpie_sandbox` 是唯一能证明「装得上」的办法。它把 `HOME`、`USERPROFILE`、`XDG_CONFIG_HOME`、`XDG_CACHE_HOME`、`XDG_STATE_HOME` 指向一个临时目录，再给网关一个自己的端口，于是沙箱里没有插件、没有登录、没有供应商、没有用量。状态存在 `<沙箱>/sandbox.json`，所以沙箱跨次复用。
