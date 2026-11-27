@@ -108,6 +108,23 @@ warning, since magpie expands `~` and `$VAR`, not the plugin's folder.
 slashed path inside the package; a package path that is not there fails, and
 `args` must be a list of strings.
 
+**Async hooks**: named exports only, and `export { request as onRequest }` is read
+by the name after `as`, which is the name magpie calls. Assigning `model`,
+`stream`, `tools` or `tool_choice` inside `onRequest` fails: magpie rolls those
+back, counts the hook as failed, and this request never calls its `onResponse`.
+A `fetch` without `ctx.signal` warns, and `ctx.report("…")` accepts only `ready`,
+`empty`, `unbound`, `unauthorized`, `unavailable`, `invalid` and `skipped`.
+Exporting `onResponse`/`onSignIn` without `onRequest` warns — it can only answer
+after a request.
+
+**An agent's `startup`**: it must give `config`, `model` and `keys`; without
+`keys` magpie has nowhere to point the agent at its provider.
+
+**`registry.json` `kind` with `providers`**: the two together are an error. A
+provider's entry writes `providers` and no `kind`; every other kind writes `kind`
+and no `providers`. The page groups by `kind`, so both at once lands the card in
+a group where nobody reads the ids.
+
 **What it does not check yet** — rules magpie's docs state that have no rule
 here, so "all clear" does not mean these:
 
@@ -116,25 +133,24 @@ here, so "all clear" does not mean these:
   forms pass.
 - **Strategy values**: the names and their grouping are verified, but not that a
   value is a function (or an object with `order`) that survives the 20 ms budget.
-- **Async hook return values**: a request hook that changes `model`, `stream`,
-  client tools or tool choice is rolled back and counted as a failure, and its
-  `fetch` must use `ctx.signal`; only the export names are checked.
+- **Hook return shapes**: what a hook may not change is checked; whether the body
+  it returns is well-formed is not (`undefined` keeps the request, but `null`, a
+  string or a partial object cannot be judged statically).
 - **Middleware hook conventions**: `ctx.reject` only works before routing;
   `onAccount` returns `{ skip: true }`; the signatures are not checked.
-- **Agent `startup`**: `launch` and `config` are checked; whether `startup`
-  writes `keys` and whether its value matches `model` are not.
 - **Pages**: permissions are limited to `usage:summary` and `providers:list`;
   `magpie.openPlugin`'s 1.5 s rate limit is not checked.
 - **Panels**: `slot` must be one of four and at most eight panels exist; the
   2400 px `<html>` ceiling is only approximated by "no fixed height".
-- **`registry.json` `kind`**: `page`, `agent`, `tools`, `middleware` and `hooks`
-  are accepted, but whether `providers` and `kind` may coexist is unverified.
 
 The checker is deliberately conservative: run against all 65 packages in the
 community repository it reports 22 findings. `reserve`'s `strategies` is flat, so
 magpie lists none of its routings — by the documentation that is a real problem.
 The other 21 are the pre-existing `keywords` / `community-name` / `page-form` /
-`permissions` warnings; the new rules added no false alarms.
+`permissions` warnings; the new rules added no false alarms. The eight real hook
+packages (aelios, agent-office, mail-watch, notify, nowledge-mem, powercontext,
+respire-memory) stay clean — every one passes `ctx.signal` and uses a valid
+`ctx.report` code.
 
 > Note: `reserve` matches the shape of the docs' own example. If magpie's loader
 > does accept the flat form, that rule should be a `warn` instead — failing it

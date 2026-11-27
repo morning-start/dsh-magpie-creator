@@ -61,18 +61,22 @@
 
 **`magpie.privacyModels`**：`command` 是 PATH 上的程序、绝对路径，或包里带斜杠的文件——写成包里路径但文件不在就判 `fail`；`args` 必须是字符串数组。
 
+**异步钩子**：只认具名导出，`export { request as onRequest }` 按 `as` 后面的名字算（那才是 magpie 调用的名字）。`onRequest` 里给 `model`/`stream`/`tools`/`tool_choice` 赋值判 `fail`——magpie 会回滚这些改动、把钩子算作失败，而且这次请求不再调用它的 `onResponse`。有 `fetch` 却没有 `ctx.signal` 判 `warn`；`ctx.report("…")` 只接受 `ready`/`empty`/`unbound`/`unauthorized`/`unavailable`/`invalid`/`skipped`。只导出 `onResponse`/`onSignIn` 而没有 `onRequest` 判 `warn`（它只能在请求之后回答）。
+
+**Agent 的 `startup`**：`startup` 必须同时给出 `config`、`model` 和 `keys`——没有 `keys` 时 magpie 无处把 Agent 指向自己提供的模型。
+
+**`registry.json` 的 `kind` 与 `providers`**：两者同时出现判错。供应商条目写 `providers`、**没有** `kind`；其余形态写 `kind`、**没有** `providers`，而插件页是按 `kind` 分组的，同时写会让卡片落到分组里、`providers` 谁也不读。
+
 **还没查的**（magpie 文档里有、检查器没有对应规则，所以全绿证明不了这些）：
 
 - **中间件 / 路由的导入**：文档说 moejs 里只能用相对路径导入，且没有 `node_modules`；检查器只认 `from "<裸包名>"`、`from "node:…"` 和 `require()`，`import("./dep.js")` 这种动态导入、`import type` 也一起漏过去。
 - **路由策略的值**：确认了导出名和分组，但不验证值是不是「带 `order` 的函数或对象」，也就是不模拟 20 ms 里的调用。
-- **异步钩子的返回值**：`onRequest` 改 `model`/`stream`/客户端工具会被回滚并算作失败，钩子必须用 `ctx.signal` 取消 `fetch`；检查器只查导出名和有无 `export default`。
+- **钩子的返回值形状**：只查了「不能改哪些字段」，不验证返回的 body 本身合不合法（比如 `undefined` 保留原请求这条是对的，但 `null`、字符串之类没法静态判断）。
 - **中间件钩子的返回约定**：`ctx.reject(status, message)` 只在 `onRequest`/`onProvider` 之前有效，`onAccount` 返回 `{ skip: true }` 表示跳过；检查器只看导出名，不看用法。
-- **Agent 的 `startup`**：只查 `launch`/`config`；`startup` 里的 `keys` 写没写、值和 `model` 对不对得上，还不查。
 - **页面**：`magpie.permissions` 现在只认 `usage:summary` 和 `providers:list`；页面读不到密钥/账号，但 `openPlugin` 是 1.5 秒一次的限流——检查器不查调用频率。
 - **面板槽位**：只查 `slot` 在四个里；文档说 `provider` 槽位对不提供 Provider 的插件也出现、最多 8 个（这个查了）、`<html>` 最高 2400px（只查了不给 `html`/`body` 固定高度）。
-- **`registry.json` 的 `kind`**：`page`/`agent`/`tools`/`middleware`/`hooks` 都收，但 `providers` 与 `kind` 同时出现算不算错没有规则，magpie 那份读取器的处理也没有实测。
 
-检查器刻意保守：拿它跑社区仓库全部 65 个包，报出 22 条。`reserve` 的 `strategies` 是扁平的，magpie 不会列出它的路由——按文档这确实是毛病；其余 21 条是原有的 `keywords`/`community-name`/`page-form`/`permissions` 一类警告，没有新增误报。
+检查器刻意保守：拿它跑社区仓库全部 65 个包，报出 22 条。`reserve` 的 `strategies` 是扁平的，magpie 不会列出它的路由——按文档这确实是毛病；其余 21 条是原有的 `keywords`/`community-name`/`page-form`/`permissions` 一类警告，没有新增误报。8 个真实的异步钩子包（aelios、agent-office、mail-watch、notify、nowledge-mem、powercontext、respire-memory）在新规则下**全部干净**——它们的 `fetch` 都传了 `ctx.signal`，`ctx.report` 用的也都是合法码。
 
 > 注意：`reserve` 那条和文档自己的示例形状一致。如果 magpie 的加载器其实接受扁平写法，这条规则要改成 `warn`——判 `fail` 的前提是文档那句「每个 `strategies[name]` 是名为 `<插件>/<name>` 的路由」配的是分组写法。
 
