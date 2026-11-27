@@ -68,7 +68,12 @@ if (privacy.status !== 0) problems.push('the privacy scan found something')
 // 6. the tests
 const tests = spawnSync(process.execPath, ['--test', 'test/*.test.mjs'], { cwd: root, encoding: 'utf8' })
 const summary = /ℹ pass (\d+)\nℹ fail (\d+)/.exec(tests.stdout)
-if (!summary) fail('the tests did not run')
+if (!summary) {
+  // A swallowed test run is a swallowed failure: show what node said.
+  const detail = (tests.stdout || '') + (tests.stderr || '')
+  process.stdout.write(detail.split('\n').slice(-25).join('\n'))
+  fail('the tests did not run')
+}
 else if (summary[2] !== '0') fail(`${summary[2]} test(s) failed`)
 else ok(`${summary[1]} tests pass`)
 
