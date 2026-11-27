@@ -3,7 +3,7 @@
 // tools module, and the templates.
 //
 //   node scripts/check-project.mjs [<repo dir>]
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
@@ -66,7 +66,10 @@ if (privacy.stderr) process.stderr.write(privacy.stderr)
 if (privacy.status !== 0) problems.push('the privacy scan found something')
 
 // 6. the tests
-const tests = spawnSync(process.execPath, ['--test', 'test/*.test.mjs'], { cwd: root, encoding: 'utf8' })
+const testFiles = readdirSync(join(root, 'test'))
+  .filter((name) => name.endsWith('.test.mjs'))
+  .map((name) => join(root, 'test', name))
+const tests = spawnSync(process.execPath, ['--test', ...testFiles], { cwd: root, encoding: 'utf8' })
 const summary = /ℹ pass (\d+)\nℹ fail (\d+)/.exec(tests.stdout)
 if (!summary) {
   // A swallowed test run is a swallowed failure: show what node said.
