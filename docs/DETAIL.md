@@ -174,6 +174,20 @@ agents and async hooks are modules magpie loads differently, and a page's
 as providers is how the first version of this produced thirty false alarms
 against real packages.
 
+**A routing is now really run.** `--load` imports a package's
+`magpie.gateway` module and calls every strategy with three stand-in seats (an
+account, an API key, one resting), on magpie's own 20 ms deadline. That covers
+what a static read cannot: whether the value is a function (or an object with
+`order`), whether it throws or hangs, and whether it returns a permutation of
+the seat indexes. Returning `undefined`, a string, `[0]`, or nothing within
+20 ms all fail — magpie falls back to the listed order **silently**, so the
+strategy looks installed while never taking effect. `onUsage` is called once
+(250 ms) and a throw is reported too.
+
+Because this executes code, `--load` no longer requires the static check to be
+clean first: the two answer different questions, and a package with a flat
+`strategies` is exactly one worth seeing run.
+
 ## The registry list
 
 `registry.json` — the list magpie's Plugins page suggests — is read into typed

@@ -24,9 +24,13 @@ if (!existsSync(dir)) {
 const report = checkPackage(dir)
 const { fails, warns } = summarize(report)
 let loaded = null
-if (load && fails === 0) {
+// A routing's strategies are checked by importing the module and calling them,
+// so a package that already fails static checks still gets that pass: the
+// caller asked for the load, and the two checks answer different questions.
+if (load) {
   loaded = await loadAndCheck(dir)
-  for (const problem of loaded.problems) report.findings.push({ level: 'fail', rule: 'hooks', message: problem })
+  const rule = loaded.kind === 'routing' ? 'routing-load' : 'hooks'
+  for (const problem of loaded.problems) report.findings.push({ level: 'fail', rule, message: problem })
 }
 
 const failCount = report.findings.filter((f) => f.level === 'fail').length

@@ -128,3 +128,59 @@ describe('the hook checker on its own', () => {
     assert.deepEqual(hookProblems(hooks, 'P'), [])
   })
 })
+
+describe('a routing\u2019s strategies, called the way magpie calls them', () => {
+  const routingPackage = (source) =>
+    makePackage({
+      'package.json': { name: '@magpie-community/middleware-probe', version: '0.1.0', type: 'module', magpie: { gateway: './probe.gateway.js' } },
+      'probe.gateway.js': source,
+    })
+
+  test('a nested group that answers with a permutation passes', async () => {
+    const dir = routingPackage('export const strategies = { g: { all: (pool, seats) => seats.map((_, i) => i) } }\n')
+    const result = await loadAndCheck(dir)
+    assert.deepEqual(result.problems, [])
+    assert.equal(result.kind, 'routing')
+  })
+
+  test('an object with order passes', async () => {
+    const dir = routingPackage('export const strategies = { g: { all: { order: (pool, seats) => seats.map((_, i) => i) } } }\n')
+    assert.deepEqual((await loadAndCheck(dir)).problems, [])
+  })
+
+  test('the flat shape is reported once per strategy', async () => {
+    const dir = routingPackage('export const strategies = { a: (pool, seats) => [], b: (pool, seats) => [] }\n')
+    const problems = (await loadAndCheck(dir)).problems
+    assert.equal(problems.filter((p) => p.includes('not a group of strategies')).length, 2)
+  })
+
+  test('a strategy that throws is reported', async () => {
+    const dir = routingPackage('export const strategies = { g: { a: () => { throw new Error("boom") } } }\n')
+    assert.ok((await loadAndCheck(dir)).problems.some((p) => p.includes('threw: boom')))
+  })
+
+  test('a strategy that returns nothing is reported', async () => {
+    const dir = routingPackage('export const strategies = { g: { a: () => {} } }\n')
+    assert.ok((await loadAndCheck(dir)).problems.some((p) => p.includes('returned nothing')))
+  })
+
+  test('a strategy that returns a string is reported', async () => {
+    const dir = routingPackage('export const strategies = { g: { a: () => "x" } }\n')
+    assert.ok((await loadAndCheck(dir)).problems.some((p) => p.includes('must return an order')))
+  })
+
+  test('a strategy that is not a permutation of the seats is reported', async () => {
+    const dir = routingPackage('export const strategies = { g: { a: () => [0] } }\n')
+    assert.ok((await loadAndCheck(dir)).problems.some((p) => p.includes('not a permutation')))
+  })
+
+  test('a strategy that never answers runs into magpie\u2019s 20 ms', async () => {
+    const dir = routingPackage('export const strategies = { g: { a: async () => { await new Promise(() => {}) } } }\n')
+    assert.ok((await loadAndCheck(dir)).problems.some((p) => p.includes('20 ms')))
+  })
+
+  test('an onUsage that throws is reported', async () => {
+    const dir = routingPackage('export const strategies = { g: { all: (pool, seats) => seats.map((_, i) => i) } }\nexport function onUsage() { throw new Error("usage") }\n')
+    assert.ok((await loadAndCheck(dir)).problems.some((p) => p.includes('onUsage threw: usage')))
+  })
+})
