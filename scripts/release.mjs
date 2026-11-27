@@ -10,14 +10,29 @@ import { readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { checkPackage, summarize } from '../lib/check.mjs'
 import { registryEntry, registryProblems } from '../lib/registry.mjs'
+import { scanPrivacy } from '../lib/privacy.mjs'
 
 const argv = process.argv.slice(2)
 const dir = resolve(argv.find((arg) => !arg.startsWith('--')) ?? '.')
 const zhIndex = argv.indexOf('--summary-zh')
 const summaryZh = zhIndex >= 0 ? argv[zhIndex + 1] : (process.env.MAGPIE_SUMMARY_ZH ?? '')
 
+// A release is permanent, so what ships is scanned before anything else: a
+// home path, an email or a token in a published package cannot be recalled.
+const shippedRoots = Array.isArray(JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).files)
+  ? JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).files.map((entry) => entry.split('/')[0])
+  : null
+const privacy = scanPrivacy(dir, {
+  authorEmails: process.env.MAGPIE_AUTHOR_EMAILS ? process.env.MAGPIE_AUTHOR_EMAILS.split(',') : [],
+  include: shippedRoots ? (rel) => shippedRoots.some((first) => rel === first || rel.startsWith(`${first}/`)) || ['package.json', 'README.md', 'LICENSE'].includes(rel) : undefined,
+})
+for (const finding of privacy.findings) {
+  console.log(`${finding.level === 'fail' ? '✗' : '!'} privacy ${finding.rule}: ${finding.file}:${finding.line} ${finding.message}`)
+}
+
 const report = checkPackage(dir)
 const { fails, warns } = summarize(report)
+const privacyFails = privacy.findings.filter((finding) => finding.level === 'fail').length
 
 console.log(`${dir}`)
 console.log(`kinds: ${report.kinds.join(', ') || '(none)'}`)
@@ -49,6 +64,7 @@ console.log(`files:   ${shipped.join(', ')}${size ? ` (${Math.round(size / 1024)
 
 const entry = registryEntry(pkg, report.kinds, { summaryZh })
 const problems = registryProblems(JSON.stringify({ version: 1, plugins: [entry] }))
+if (privacyFails) problems.unshift(`${privacyFails} privacy finding(s): what ships cannot be recalled`)
 console.log('')
 console.log('registry.json entry:')
 console.log(JSON.stringify(entry, null, 2))

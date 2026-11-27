@@ -1,0 +1,21 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The privacy scan runs inside check-project, and on its own first: a
+      # commit that carries a home path, an email or a token should fail loudly
+      # and early, before anyone sees the rest.
+      - name: Nothing personal is committed
+        run: node scripts/check-privacy.mjs . --all
+      - name: The project checks itself
+        run: node scripts/check-project.mjs .

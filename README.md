@@ -97,9 +97,10 @@ node scripts/sandbox.mjs install dev ./my-plugin
 node scripts/sandbox.mjs list dev
 node scripts/try.mjs ./my-plugin            # 检查 + 沙箱 + 安装 + 列出加载结果
 node scripts/accept-plugin.mjs ./my-plugin  # 沙箱里真装一次，读 magpie 说它加载到了什么
+node scripts/check-privacy.mjs . --all      # 扫一遍：有没有把开发者自己的路径/邮箱/密钥带出去
 node scripts/release.mjs ./my-plugin        # 发版前检查 + registry 条目 + 发布命令
 node scripts/check-project.mjs .            # 这个项目自己
-npm test                                    # 78 个测试
+npm test                                    # 138 个测试
 ```
 
 ## 能力范围（装之前先看）

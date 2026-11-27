@@ -125,6 +125,26 @@
 
 **它证明不了的**，报告里会自己写明：沙箱里没有供应商凭据，所以既证明不了一个厂商的登录能走通，也证明不了中间件真的改写了某个请求。能证明的是“装得上、加载得了、magpie 认得出它的钩子”——这三件事之前没有任何工具能回答。
 
+## 隐私扫描
+
+发布出去的东西收不回来——一个包发到 npm、一个仓库设成 public，之后删掉的只是"以后"，已经下载过的还在。所以 `scripts/check-privacy.mjs` 在**每次**提交前和发布前都扫一遍，看有没有把开发者自己的东西带出去。
+
+默认只扫 `package.json` 的 `files` 里真会发布的那部分（`--all` 扫全仓库）。规则刻意收得很窄：
+
+| 规则 | 判罚 | 抓什么 |
+|---|---|---|
+| `credential` | `fail` | `sk-`、`ghp_`、`AKIA`、`xox*`、`-----BEGIN … PRIVATE KEY-----` |
+| `home-path` | `fail` | 真实的 `C:\Users\<名字>\`、`/Users/<名字>/`、`/home/<名字>/` |
+| `author-email` | `warn` | 仓库自己的提交者邮箱出现在要发布的文件里 |
+
+**不报**的：`~/.config/magpie` 这种约定路径、`C:\Program Files`、`C:\Users\<you>` 这种占位符，以及别人（不是提交者）的邮箱。这些在文档和模板里是**描述**，不是个人信息。
+
+报告里的命中内容会打码（`C:\…s\work`、`sk-…AA`），免得扫描报告本身变成泄露。
+
+邮箱从 `git log` 的 `%ae`/`%ce` 自动取，所以换机器、换邮箱也不用改配置；也可以用 `--author <email>` 显式指定，或设 `MAGPIE_AUTHOR_EMAILS`。
+
+它挂在两个地方：`check-project`（所以 `npm test` 那条链路会跑），和 `release`（发布前，命中 `fail` 直接算进问题列表）。GitHub Actions 的 `check` 工作流也会在每次 push 和 PR 上跑一遍 `--all`。
+
 ## 沙箱
 
 `magpie_sandbox` 是唯一能证明「装得上」的办法。它把 `HOME`、`USERPROFILE`、`XDG_CONFIG_HOME`、`XDG_CACHE_HOME`、`XDG_STATE_HOME` 指向一个临时目录，再给网关一个自己的端口，于是沙箱里没有插件、没有登录、没有供应商、没有用量。状态存在 `<沙箱>/sandbox.json`，所以沙箱跨次复用。

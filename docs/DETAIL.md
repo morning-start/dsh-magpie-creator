@@ -250,6 +250,37 @@ credentials, so it can show neither that a vendor's sign-in works nor that a
 middleware changes a real request. What it does show — that the package
 installs, loads, and that magpie knows its hooks — was answered by nothing else.
 
+## The privacy scan
+
+What is published cannot be recalled: once a package is on npm and a repository
+is public, deleting it only changes the future — copies already exist. So
+`scripts/check-privacy.mjs` runs before **every** commit and before a release,
+looking for the author's own things in what would ship.
+
+By default it scans only what `package.json`'s `files` actually publishes
+(`--all` scans the whole tree). The rules are deliberately narrow:
+
+| Rule | Level | Catches |
+|---|---|---|
+| `credential` | `fail` | `sk-`, `ghp_`, `AKIA`, `xox*`, `-----BEGIN … PRIVATE KEY-----` |
+| `home-path` | `fail` | a real `C:\Users\<name>\`, `/Users/<name>/`, `/home/<name>/` |
+| `author-email` | `warn` | one of the repository's own committer addresses in a shipped file |
+
+**Not reported**: `~/.config/magpie`, `C:\Program Files`, a `<you>`
+placeholder, or anybody else's address. In documentation and templates those are
+descriptions, not personal data.
+
+A finding's text is masked in the report (`C:\…s\work`, `sk-…AA`), so the scan
+cannot become the leak.
+
+Author addresses come from `git log`'s `%ae`/`%ce`, so a different machine or a
+new address needs no configuration; `--author <email>` or
+`MAGPIE_AUTHOR_EMAILS` overrides it.
+
+It is wired in twice — into `check-project` (so the `npm test` path runs it) and
+into `release` (before publishing, where a `fail` joins the problem list) — and
+the GitHub Actions `check` workflow runs it with `--all` on every push and PR.
+
 ## The sandbox
 
 `magpie_sandbox` is the only honest way to prove a plugin installs. It points

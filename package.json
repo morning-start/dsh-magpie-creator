@@ -37,7 +37,9 @@
     "check:patch": "node scripts/check-patch.mjs .",
     "check:skills": "node scripts/check-skills.mjs",
     "check:project": "node scripts/check-project.mjs .",
-    "accept": "node scripts/accept-plugin.mjs ."
+    "accept": "node scripts/accept-plugin.mjs .",
+    "check:privacy": "node scripts/check-privacy.mjs .",
+    "check:privacy:all": "node scripts/check-privacy.mjs . --all"
   },
   "files": [
     "index.js",

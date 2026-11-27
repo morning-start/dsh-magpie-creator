@@ -6,6 +6,7 @@ import { after, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { hookProblems, loadAndCheck } from '../lib/load.mjs'
 import { middlewareEntries, readListing } from '../lib/accept.mjs'
+import { scanPrivacy } from '../lib/privacy.mjs'
 
 const roots = []
 function makePackage(files) {
@@ -216,5 +217,51 @@ describe('reading what magpie plugin --json says', () => {
   test('a load error the entry carries is reported', () => {
     const withError = { ...listing, middleware: { 'C:\\work\\guard': { hooks: [], failures: 1, error: 'SyntaxError: x' } } }
     assert.equal(middlewareEntries(withError)[0].loadError, 'SyntaxError: x')
+  })
+})
+
+describe('the privacy scan', () => {
+  const BS = String.fromCharCode(92)
+  const NL = String.fromCharCode(10)
+  const packageWith = (files) => {
+    const dir = mkdtempSync(join(tmpdir(), 'privacy-'))
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'x', version: '0.1.0', files: Object.keys(files) }))
+    for (const [rel, body] of Object.entries(files)) writeFileSync(join(dir, rel), body)
+    return dir
+  }
+
+  test('a home path is a failure', () => {
+    const line = ['const home = "C:', 'Users', 'alice', 'work"'].join(BS) + NL
+    const found = scanPrivacy(packageWith({ 'a.mjs': line })).findings
+    assert.equal(found.length, 1)
+    assert.equal(found[0].rule, 'home-path')
+    assert.equal(found[0].level, 'fail')
+  })
+
+  test('a placeholder path and a generic path are not', () => {
+    const body = [
+      ['const a = "C:', 'Users', '<you>', 'x"'].join(BS) + NL,
+      'const b = "~/.config/magpie"' + NL,
+      ['const c = "C:', 'Program Files', 'x"'].join(BS) + NL,
+    ].join('')
+    assert.deepEqual(scanPrivacy(packageWith({ 'a.mjs': body })).findings, [])
+  })
+
+  test('a token is a failure, and the report masks it', () => {
+    const secret = 'sk-' + 'A'.repeat(24)
+    const found = scanPrivacy(packageWith({ 'a.mjs': 'const key = "' + secret + '"' + NL })).findings
+    assert.equal(found[0].rule, 'credential')
+    assert.ok(!found[0].text.includes('A'.repeat(24)), 'the report must not repeat the secret')
+  })
+
+  test('an author email is a warning', () => {
+    const found = scanPrivacy(packageWith({ 'README.md': 'contact someone@example.com' + NL }), { authorEmails: ['someone@example.com'] }).findings
+    assert.equal(found.length, 1)
+    assert.equal(found[0].level, 'warn')
+  })
+
+  test('an email that is not the author is left alone', () => {
+    const dir = packageWith({ 'README.md': 'contact someone@example.com' + NL })
+    assert.deepEqual(scanPrivacy(dir, { authorEmails: ['other@example.com'] }).findings, [])
   })
 })

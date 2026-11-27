@@ -59,7 +59,13 @@ for (const entry of ['index.js', 'tools/index.js', 'lib/index.mjs']) {
   else ok(`${entry} parses`)
 }
 
-// 5. the tests
+// 5. nothing personal ships
+const privacy = spawnSync(process.execPath, [join(here, 'check-privacy.mjs'), root], { encoding: 'utf8' })
+process.stdout.write(privacy.stdout)
+if (privacy.stderr) process.stderr.write(privacy.stderr)
+if (privacy.status !== 0) problems.push('the privacy scan found something')
+
+// 6. the tests
 const tests = spawnSync(process.execPath, ['--test', 'test/*.test.mjs'], { cwd: root, encoding: 'utf8' })
 const summary = /ℹ pass (\d+)\nℹ fail (\d+)/.exec(tests.stdout)
 if (!summary) fail('the tests did not run')
