@@ -177,3 +177,97 @@ describe('a package that is several kinds at once', () => {
     assert.deepEqual(checkPackage(dir).kinds.sort(), ['provider', 'tools'])
   })
 })
+
+describe('routing strategies', () => {
+  const routing = (gatewaySource) =>
+    makePackage({
+      'package.json': { name: '@magpie-community/middleware-spread', version: '0.1.0', magpie: { gateway: './spread.gateway.js' } },
+      'spread.gateway.js': gatewaySource,
+      'strategies.json': [{ name: 'a case', strategy: 'fewest', seats: [{ key: 'a' }], expect: ['a'] }],
+    })
+
+  test('the docs\u2019 flat example is reported, because magpie reads groups', () => {
+    const dir = routing('export const strategies = {\n  "fewest-tokens": (pool, seats) => seats.map((_, i) => i),\n}\n')
+    assert.ok(rules(checkPackage(dir), 'fail').includes('routing-strategies-flat'))
+  })
+
+  test('method shorthand is the same flat shape', () => {
+    const dir = routing('export const strategies = {\n  "fewest-tokens"(pool, seats) {\n    return [0]\n  },\n}\n')
+    assert.ok(rules(checkPackage(dir), 'fail').includes('routing-strategies-flat'))
+  })
+
+  test('nested groups pass', () => {
+    const dir = routing('export const strategies = {\n  cheap: {\n    "least-used": (pool, seats) => seats.map((_, i) => i),\n  },\n}\n')
+    assert.ok(!rules(checkPackage(dir), 'fail').includes('routing-strategies-flat'))
+  })
+
+  test('a strategy named after the plugin would shadow another', () => {
+    const dir = makePackage({
+      'package.json': { name: '@magpie-community/middleware-spread', version: '0.1.0', magpie: { gateway: './spread.gateway.js' } },
+      'spread.gateway.js': 'export const strategies = {\n  spread: {\n    "least-used": (pool, seats) => seats.map((_, i) => i),\n  },\n}\n',
+      'strategies.json': [{ name: 'a case', strategy: 'least-used', seats: [{ key: 'a' }], expect: ['a'] }],
+    })
+    assert.ok(rules(checkPackage(dir), 'warn').includes('routing-strategy-shadow'))
+  })
+})
+
+describe('an agent\u2019s launch block', () => {
+  const agentWith = (launch) =>
+    makePackage({
+      'package.json': { name: '@magpie-community/agent-toy', version: '0.1.0', magpie: { agent: './toy.agent.js' } },
+      'toy.agent.js': `export const agent = {\n  id: 'toy',\n  config: '~/.toy/settings.json',\n  model: 'model',\n  launch: ${launch},\n}\n\nexport function connect({ gateway }) {\n  return { 'api-base': gateway.v1 }\n}\n`,
+    })
+
+  test('the documented placeholders pass', () => {
+    const dir = agentWith('{ env: { TOY_API_KEY: "{key}", TOY_BASE: "{url}" }, model: "--model", args: { "--settings": "{config}" } }')
+    assert.ok(!rules(checkPackage(dir)).some((r) => r === 'agent-launch' || r === 'agent-config'))
+  })
+
+  test('an unknown placeholder is reported', () => {
+    const dir = agentWith('{ env: { TOY_BASE: "{base}" } }')
+    assert.ok(rules(checkPackage(dir), 'fail').includes('agent-launch'))
+  })
+
+  test('an env value with no placeholder is reported', () => {
+    const dir = agentWith('{ env: { TOY_MODE: "gateway" } }')
+    assert.ok(rules(checkPackage(dir), 'warn').includes('agent-launch'))
+  })
+
+  test('a relative config path is reported', () => {
+    const dir = makePackage({
+      'package.json': { name: '@magpie-community/agent-toy2', version: '0.1.0', magpie: { agent: './toy2.agent.js' } },
+      'toy2.agent.js': 'export const agent = { id: "toy2", config: "settings.json", model: "model" }\n',
+    })
+    assert.ok(rules(checkPackage(dir), 'warn').includes('agent-config'))
+  })
+})
+
+describe('privacyModels', () => {
+  const withPrivacy = (privacy, files = {}) =>
+    makePackage({
+      'package.json': { name: 'magpie-privacy-x', version: '0.1.0', magpie: { privacyModels: privacy } },
+      ...files,
+    })
+
+  test('a program on PATH passes', () => {
+    assert.ok(!rules(checkPackage(withPrivacy({ command: 'pf-detect', args: ['--quiet'] })), 'fail').some((r) => r.startsWith('privacy')))
+  })
+
+  test('a command inside the package must exist', () => {
+    const report = checkPackage(withPrivacy({ command: 'bin/detect' }))
+    assert.ok(rules(report, 'fail').includes('privacy-command'))
+  })
+
+  test('a command inside the package passes when it is there', () => {
+    const report = checkPackage(withPrivacy({ command: 'bin/detect' }, { 'bin/detect': '#!/bin/sh\n' }))
+    assert.ok(!rules(report).some((r) => r.startsWith('privacy')))
+  })
+
+  test('no command at all is reported', () => {
+    assert.ok(rules(checkPackage(withPrivacy({ args: [] })), 'fail').includes('privacy-command'))
+  })
+
+  test('args must be strings', () => {
+    assert.ok(rules(checkPackage(withPrivacy({ command: 'pf-detect', args: ['--n', 3] })), 'fail').includes('privacy-args'))
+  })
+})

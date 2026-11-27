@@ -20,30 +20,34 @@
 // leaves them in their listed order.
 
 export const strategies = {
-  // Accounts with the most room first; a resting seat last.
-  'most-room': (pool, seats, options) => {
-    void pool
-    void options
-    return seats
-      .map((_, index) => index)
-      .sort((a, b) => (Number(seats[a].resting) - Number(seats[b].resting)) || (Number(seats[a].used) - Number(seats[b].used)))
-  },
+  // magpie reads nested groups: `{ group: { name: fn } }`. `{{short}}` is the
+  // short name of this package, so these list as `{{short}}/pick/most-room`.
+  pick: {
+    // Accounts with the most room first; a resting seat last.
+    'most-room': (pool, seats, options) => {
+      void pool
+      void options
+      return seats
+        .map((_, index) => index)
+        .sort((a, b) => (Number(seats[a].resting) - Number(seats[b].resting)) || (Number(seats[a].used) - Number(seats[b].used)))
+    },
 
-  // Fill each seat up to a share of its allowance, then move on.
-  'fill-then-next': (pool, seats, options) => {
-    void pool
-    const ceiling = Number(options?.ceiling ?? 80)
-    // A seat whose allowance is not known yet is not full: it goes with the
-    // seats that still have room, ahead of the ones already filled.
-    const filled = (seat) => Boolean(seat.known) && Number(seat.used) >= ceiling
-    return seats
-      .map((_, index) => index)
-      .sort((a, b) => {
-        const fa = filled(seats[a]) ? 1 : 0
-        const fb = filled(seats[b]) ? 1 : 0
-        if (fa !== fb) return fa - fb
-        return (Number(seats[a].resting) - Number(seats[b].resting)) || (Number(seats[a].used) - Number(seats[b].used))
-      })
+    // Fill each seat up to a share of its allowance, then move on.
+    'fill-then-next': (pool, seats, options) => {
+      void pool
+      const ceiling = Number(options?.ceiling ?? 80)
+      // A seat whose allowance is not known yet is not full: it goes with the
+      // seats that still have room, ahead of the ones already filled.
+      const filled = (seat) => Boolean(seat.known) && Number(seat.used) >= ceiling
+      return seats
+        .map((_, index) => index)
+        .sort((a, b) => {
+          const fa = filled(seats[a]) ? 1 : 0
+          const fb = filled(seats[b]) ? 1 : 0
+          if (fa !== fb) return fa - fb
+          return (Number(seats[a].resting) - Number(seats[b].resting)) || (Number(seats[a].used) - Number(seats[b].used))
+        })
+    },
   },
 }
 

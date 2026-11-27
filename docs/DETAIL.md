@@ -90,33 +90,56 @@ one of `auth`/`plugin`/`provider` in its keywords, or magpie's Plugins search
 checked against the shapes the community repository's harness runs, so a package
 that moves there keeps its tests.
 
+**Routing strategies**: `strategies` must be **nested groups**
+(`{ group: { name: fn } }`) — magpie takes routing names from the groups only, so
+the flat `export const strategies = { "fewest-tokens": (pool, seats) => … }` that
+the docs' own example shows lists nothing, and the checker fails it. A group name
+becomes `<plugin short name>/<group name>`, so a group named after the plugin is
+warned as shadowing another plugin of that name.
+
+**An agent's `launch`**: `launch.env` values are exactly `{key}`, `{url}` or
+`{v1}` (one path segment may follow the address), and `launch.args` values are
+exactly `{config}`; anything else fails. A value with no placeholder at all is a
+warning, because it is written into the user's shell as-is. `config`,
+`startup.config` and `base` must be `~`, `$VAR` or absolute — a relative path is a
+warning, since magpie expands `~` and `$VAR`, not the plugin's folder.
+
+**`magpie.privacyModels`**: `command` is a program on PATH, an absolute path, or a
+slashed path inside the package; a package path that is not there fails, and
+`args` must be a list of strings.
+
 **What it does not check yet** — rules magpie's docs state that have no rule
 here, so "all clear" does not mean these:
 
 - **moejs imports**: only static `from "<bare name>"`, `from "node:…"` and
   `require()` are caught; `import("./dep.js")`, `import type` and other dynamic
   forms pass.
-- **Routing strategy names and values**: a flat `{ name: fn }` and a name that
-  collides with another plugin's (`<plugin>/<name>`) are not checked; only that
-  `strategies` is an object.
+- **Strategy values**: the names and their grouping are verified, but not that a
+  value is a function (or an object with `order`) that survives the 20 ms budget.
 - **Async hook return values**: a request hook that changes `model`, `stream`,
   client tools or tool choice is rolled back and counted as a failure, and its
   `fetch` must use `ctx.signal`; only the export names are checked.
 - **Middleware hook conventions**: `ctx.reject` only works before routing;
   `onAccount` returns `{ skip: true }`; the signatures are not checked.
-- **Agent `library` details**: `mcp` without `mcpFormat` is a fail, but bad
-  `launch` placeholders (`{key}`, `{url}`, `{v1}`, `{config}`), a relative
-  `config` path, and a `startup` without `keys` are not.
+- **Agent `startup`**: `launch` and `config` are checked; whether `startup`
+  writes `keys` and whether its value matches `model` are not.
 - **Pages**: permissions are limited to `usage:summary` and `providers:list`;
   `magpie.openPlugin`'s 1.5 s rate limit is not checked.
 - **Panels**: `slot` must be one of four and at most eight panels exist; the
   2400 px `<html>` ceiling is only approximated by "no fixed height".
 - **`registry.json` `kind`**: `page`, `agent`, `tools`, `middleware` and `hooks`
   are accepted, but whether `providers` and `kind` may coexist is unverified.
-- **`magpie.privacyModels`**: the `command` resolution (PATH, absolute, or a
-  slashed path inside the package) is not checked at all.
 
 The checker is deliberately conservative: run against all 65 packages in the
+community repository it reports 22 findings. `reserve`'s `strategies` is flat, so
+magpie lists none of its routings — by the documentation that is a real problem.
+The other 21 are the pre-existing `keywords` / `community-name` / `page-form` /
+`permissions` warnings; the new rules added no false alarms.
+
+> Note: `reserve` matches the shape of the docs' own example. If magpie's loader
+> does accept the flat form, that rule should be a `warn` instead — failing it
+> rests on the doc's "every `strategies[name]` is a routing named
+> `<plugin>/<name>`" being about nested groups.: run against all 65 packages in the
 community repository it reports one finding, and that one is a real bug
 (`agent-console` references a `session.js` that is not in the package).
 

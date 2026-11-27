@@ -55,19 +55,26 @@
 
 **用例**：中间件的 `cases.json` 和路由的 `strategies.json` 按社区仓库那个 harness 认的形状检查，所以搬进那个仓库时测试不用改。
 
+**路由策略**：`strategies` 必须是**嵌套分组**（`{ group: { name: fn } }`）——magpie 只从分组里取路由名，文档里那个 `export const strategies = { "fewest-tokens": (pool, seats) => … }` 的扁平写法一个路由都不会列出，检查器判它 `fail`。每组名会变成 `<插件短名>/<组名>`，所以和插件短名同名的组会警告成「会遮住另一个同名插件的路由」。
+
+**Agent 的 `launch`**：`launch.env` 的值只能是 `{key}`、`{url}`、`{v1}`（地址后最多再接一段路径），`launch.args` 的值只能是 `{config}`，写别的判 `fail`；值里一个占位符都没有判 `warn`（会原样写进用户的 shell）。`config`、`startup.config`、`base` 必须是 `~`、`$VAR`、绝对路径之一，相对路径判 `warn`（magpie 展开 `~`/`$VAR`，不展开插件目录）。
+
+**`magpie.privacyModels`**：`command` 是 PATH 上的程序、绝对路径，或包里带斜杠的文件——写成包里路径但文件不在就判 `fail`；`args` 必须是字符串数组。
+
 **还没查的**（magpie 文档里有、检查器没有对应规则，所以全绿证明不了这些）：
 
 - **中间件 / 路由的导入**：文档说 moejs 里只能用相对路径导入，且没有 `node_modules`；检查器只认 `from "<裸包名>"`、`from "node:…"` 和 `require()`，`import("./dep.js")` 这种动态导入、`import type` 也一起漏过去。
-- **路由策略的名字和导出**：`strategies[name]` 会变成 `<插件>/<name>`；检查器只确认 `strategies` 是个对象，不查值是不是「带 `order` 的函数或对象」，也不查这个键会不会和别的插件撞名。
+- **路由策略的值**：确认了导出名和分组，但不验证值是不是「带 `order` 的函数或对象」，也就是不模拟 20 ms 里的调用。
 - **异步钩子的返回值**：`onRequest` 改 `model`/`stream`/客户端工具会被回滚并算作失败，钩子必须用 `ctx.signal` 取消 `fetch`；检查器只查导出名和有无 `export default`。
 - **中间件钩子的返回约定**：`ctx.reject(status, message)` 只在 `onRequest`/`onProvider` 之前有效，`onAccount` 返回 `{ skip: true }` 表示跳过；检查器只看导出名，不看用法。
-- **Agent 的 `library` 细节**：写了 `mcp` 没写 `mcpFormat` 现在算 fail；但 `launch` 里的占位符（`{key}`、`{url}`、`{v1}`、`{config}`）写错、`config` 是相对路径（文档要求展开 `~`/`$VAR`）、`startup` 里的 `keys` 没写，都还不查。
+- **Agent 的 `startup`**：只查 `launch`/`config`；`startup` 里的 `keys` 写没写、值和 `model` 对不对得上，还不查。
 - **页面**：`magpie.permissions` 现在只认 `usage:summary` 和 `providers:list`；页面读不到密钥/账号，但 `openPlugin` 是 1.5 秒一次的限流——检查器不查调用频率。
 - **面板槽位**：只查 `slot` 在四个里；文档说 `provider` 槽位对不提供 Provider 的插件也出现、最多 8 个（这个查了）、`<html>` 最高 2400px（只查了不给 `html`/`body` 固定高度）。
 - **`registry.json` 的 `kind`**：`page`/`agent`/`tools`/`middleware`/`hooks` 都收，但 `providers` 与 `kind` 同时出现算不算错没有规则，magpie 那份读取器的处理也没有实测。
-- **`magpie.privacyModels`**：命令路径是 `PATH` 上的、绝对路径、还是包里带斜杠的文件，检查器完全没碰。
 
-检查器刻意保守：拿它跑社区仓库全部 65 个包，只报出一条，而且那条是真 bug（`agent-console` 引用了包内不存在的 `session.js`）。
+检查器刻意保守：拿它跑社区仓库全部 65 个包，报出 22 条。`reserve` 的 `strategies` 是扁平的，magpie 不会列出它的路由——按文档这确实是毛病；其余 21 条是原有的 `keywords`/`community-name`/`page-form`/`permissions` 一类警告，没有新增误报。
+
+> 注意：`reserve` 那条和文档自己的示例形状一致。如果 magpie 的加载器其实接受扁平写法，这条规则要改成 `warn`——判 `fail` 的前提是文档那句「每个 `strategies[name]` 是名为 `<插件>/<name>` 的路由」配的是分组写法。
 
 ### 加载它，而不只是读它
 
