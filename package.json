@@ -2,7 +2,7 @@
   "name": "dsh-magpie-creator",
   "version": "0.1.0",
   "type": "module",
-  "description": "Magpie plugin development toolkit for DeepSeek Harness: a Magpie mode (agent preset) plus tools, skills and templates to build, debug, test and release magpie plugins (providers, gateway middleware, routings, tools, pages, agents, hooks).",
+  "description": "magpie 插件开发工具包（DeepSeek Harness）：一个 magpie 模式（agent preset），加上开发、调试、测试和发布 magpie 插件用的工具、技能和模板。",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/morning-start/dsh-magpie-creator.git"

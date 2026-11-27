@@ -140,7 +140,7 @@ docs/                 更长的说明
 |---|---|---|
 | 包装得上、组合得出来 | 沙箱里 `rehearse` | installed and composed |
 | Magpie 模式注册了、是健康的 | 沙箱 `agentPresets/list` | `magpie`，没有 `broken` |
-| 模式能选 | 沙箱里新建任务的模式选择器 | 列出「Magpie mode」 |
+| 模式能选 | 沙箱里新建任务的模式选择器 | 列出「magpie 模式」 |
 | 6 个工具都注册 | `test/tools.test.mjs` 对着 mock 上下文 | 16 个测试通过 |
 | 7 套模板都检查干净 | `test/scaffold.test.mjs` | 7 种，0 fail 0 warn |
 | 检查器和真包一致 | 跑社区仓库全部 65 个包 | 1 条，是真 bug |

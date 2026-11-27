@@ -30,11 +30,10 @@
       name: '@deepseek-ai/dsh-agent-preset'
       config:
         id: magpie
-        name: Magpie mode
+        name: magpie 模式
         description: >-
-          Build, debug, test and release magpie plugins (providers, gateway
-          middleware, routings, tools, pages, agents, hooks) with the magpie CLI,
-          a sandbox and templates.
+          在 DeepSeek Harness 里开发、调试、测试和发布 magpie 插件：供应商、网关中间件、
+          路由策略、工具、页面、Agent 和异步钩子。自带 magpie 命令行、独立沙箱和七套模板。
         order: 5
         plugins:
           # --- shipped preset-cordis (verbatim, re-indented) ---

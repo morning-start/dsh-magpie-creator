@@ -1,13 +1,20 @@
 {
-  "name": "Magpie",
-  "description": "Build, debug, test and release magpie plugins: providers, gateway middleware, routings, tools, pages, agents and async hooks.",
-  "tagline": "Magpie plugin development, with a sandbox that never touches yours",
+  "name": "magpie 模式",
+  "description": "开发、调试、测试和发布 magpie 插件：供应商、网关中间件、路由策略、工具、页面、Agent 和异步钩子。",
+  "tagline": "开发 magpie 插件，沙箱独立，不碰你自己的 magpie",
   "repository": "https://github.com/morning-start/dsh-magpie-creator",
   "license": "MIT",
-  "keywords": ["magpie", "magpie-plugin", "opencode-plugin", "plugin-development", "agent-preset", "sandbox"],
+  "keywords": [
+    "magpie",
+    "deepseek-harness",
+    "dsh",
+    "plugin-development",
+    "agent-preset",
+    "sandbox"
+  ],
   "highlights": [
-    "A Magpie mode that mounts a sandbox, seven templates and eight skills",
-    "magpie_plugin_check catches what magpie would refuse to load, before installing",
-    "magpie_sandbox gives a plugin its own magpie: own HOME, own config, own port"
+    "magpie 模式挂载一套独立沙箱、七套模板和八个技能",
+    "沙箱里真装一次，读 magpie 自己说它加载到了什么",
+    "检查器覆盖 moejs 限制、注册表条目和发布前的隐私扫描"
   ]
 }
