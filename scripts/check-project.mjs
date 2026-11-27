@@ -70,7 +70,7 @@ const testFiles = readdirSync(join(root, 'test'))
   .filter((name) => name.endsWith('.test.mjs'))
   .map((name) => join(root, 'test', name))
 const tests = spawnSync(process.execPath, ['--test', ...testFiles], { cwd: root, encoding: 'utf8' })
-const summary = /ℹ pass (\d+)\nℹ fail (\d+)/.exec(tests.stdout)
+const summary = /(?:ℹ|#) pass (\d+)\s*\n(?:ℹ|#) fail (\d+)/.exec(tests.stdout)
 if (!summary) {
   // A swallowed test run is a swallowed failure: show what node said.
   const detail = (tests.stdout || '') + (tests.stderr || '')
