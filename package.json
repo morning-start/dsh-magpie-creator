@@ -1,6 +1,6 @@
 {
   "name": "dsh-magpie-creator",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "magpie 插件开发工具包（DeepSeek Harness）：一个 magpie 模式（agent preset），加上开发、调试、测试和发布 magpie 插件用的工具、技能和模板。",
   "repository": {
