@@ -10,7 +10,7 @@ description: 给 magpie 加工具（每个 agent 通过 /mcp/magpie/tools 都能
 工具跑在 **Bun 插件宿主**里，magpie 把它们组成自己的 MCP 服务器 `/mcp/magpie/tools`（Streamable HTTP），**每个 agent 都能用**，不只是 OpenCode。
 
 ```
-magpie_plugin_new({ kind: 'tools', packageName: '@magpie-community/tools-calc', title: 'Calc', description: '…' })
+magpie_plugin_new({ kind: 'tools', packageName: '@acme/calc', title: 'Calc', description: '…' })
 ```
 
 ### 形状
@@ -62,7 +62,7 @@ bun test    # 模板自带：名字、描述、args、execute
 Agent 插件把 magpie 没内置接入的 Agent 放到 Agents 页：选一个 magpie 的模型，magpie 把模型、网关地址和这个 Agent 自己的 key 写进它的配置；关掉开关，每个键都还原。
 
 ```
-magpie_plugin_new({ kind: 'agent', packageName: '@magpie-community/agent-aider', title: 'Aider', id: 'aider' })
+magpie_plugin_new({ kind: 'agent', packageName: '@acme/aider', title: 'Aider', id: 'aider' })
 ```
 
 ### 形状

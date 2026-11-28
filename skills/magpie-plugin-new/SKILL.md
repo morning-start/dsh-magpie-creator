@@ -35,7 +35,7 @@ magpie 的插件不是一种东西，而是七种，运行的地方、限制、�
 
 | 字段 | 问法 |
 |---|---|
-| `packageName` | 包名。社区仓库用 `@magpie-community/<前缀>-<名字>`，自己的仓库随便，但建议同前缀 |
+| `packageName` | 包名，必须是 `@作者名/插件名`（如 `@acme/calc`）。裸包名会被拒绝：说不清是谁的，发出去也没法加作用域 |
 | `description` | 一句话：做什么 + 从哪儿出现。这段会进 README 和卡片 |
 | `kind` | 上面七种之一（包名前缀能推出来，推不出来才问） |
 
@@ -53,7 +53,7 @@ magpie 的插件不是一种东西，而是七种，运行的地方、限制、�
 ```
 magpie_plugin_new({
   kind: 'provider',
-  packageName: '@magpie-community/opencode-acme-auth',
+  packageName: '@acme/opencode-acme-auth',
   title: 'Acme',
   description: 'Acme Coding Plan：复用 Acme 桌面端的登录，含实时模型目录与每日签到',
   id: 'acme',
@@ -70,7 +70,7 @@ magpie_plugin_new({
 命令行等价物（无人对话时用）：
 
 ```sh
-node scripts/new-plugin.mjs --kind page --name @magpie-community/page-notes --dir ./notes --title Notes
+node scripts/new-plugin.mjs --kind page --name @acme/notes --dir ./notes --title Notes
 ```
 
 ## 4. 读检查报告，别跳过 warn

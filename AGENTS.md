@@ -24,7 +24,7 @@ lib/                  magpie 定位、包检查、加载检查、脚手架、沙
 skills/               9 个 skill，各自一个目录一个 SKILL.md
 templates/            7 种 magpie 插件的最小实现，带测试；`_release/` 是共用的发版工作流
 scripts/              13 个命令行入口，和工具共用 lib/
-test/                 158 个测试（node --test）
+test/                 159 个测试（node --test）
 docs/                 实现说明与验证记录
 market.json           商店卡片元数据
 checks.json           本仓库自己的检查规则（dsh_project_check）
@@ -34,13 +34,14 @@ checks.json           本仓库自己的检查规则（dsh_project_check）
 ## 开发循环
 
 1. 改代码。逻辑在 `lib/`，工具入参在 `tools/index.js`，命令行入口在 `scripts/`。
-2. 跑 `node scripts/check-project.mjs .`：manifest、patch 对齐、技能格式、语法、隐私扫描、158 个测试，一次跑完。必须全绿。
+2. 跑 `node scripts/check-project.mjs .`：manifest、patch 对齐、技能格式、语法、隐私扫描、159 个测试，一次跑完。必须全绿。
 3. `dsh_plugin_check`（0 fail）和 `dsh_project_check`（`checks.json` 0 fail）也过一遍。
 4. 动到发布面（`package.json` 的 `files`、入口、依赖）时，再跑 `dsh_plugin_release check` → `pack` → `rehearse`，确认打出来的包能在沙箱里装上、组合出来。
 5. 新增工具 / skill / 模板时，这些地方要一起改：`tools/index.js`（注册）、`locale/en.json` + `locale/zh.json`（键要对称）、`checks.json`（skill 的 frontmatter 规则）、`README.md` 的工具 / 技能表、模板列表。
 
 ## 硬约束
 
+- 插件包名一律 `@作者名/插件名`（`lib/registry.mjs` 的 `isScopedName`）。裸包名：`magpie_plugin_new` 拒绝、`magpie_plugin_check` 报 `name-scope` fail；kind 不进名字，由 `magpie` 字段和文件决定。改这条规则时，`lib/registry.mjs`（规则）、`lib/scaffold.mjs`（脚手架）、`lib/check.mjs`（检查）、`tools/index.js`（工具说明）四处要一起改。
 - `cordis.patch.yml` 里 `# --- shipped preset-cordis ---` 到 `# --- end shipped ---` 是 DSH 对应版本的**逐字拷贝**，只调了缩进。DSH 升级后整段重拷，不要在中间手改；`scripts/check-patch.mjs` 会发现漂移。
 - `lib/` 和 `tools/` 不写 `console`（`checks.json` 的 `no-console`）。
 - 不要把密钥、token、本机路径、作者邮箱写进代码、测试、fixtures 或截图；`check-privacy` 会拦，`check.yml` 在每次 push 时都跑。
@@ -86,7 +87,7 @@ dsh plugin --profile <profile> add dsh-magpie-creator@<版本>
 
 ## 发布前清单
 
-- [ ] `node scripts/check-project.mjs .` 全绿（158 个测试）
+- [ ] `node scripts/check-project.mjs .` 全绿（159 个测试）
 - [ ] `dsh_plugin_check` 0 fail
 - [ ] `dsh_project_check` 0 fail
 - [ ] `dsh_plugin_release check` 和 `rehearse` 通过

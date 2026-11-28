@@ -12,7 +12,7 @@ description: 写 magpie 供应商插件（OpenCode 的 auth 插件）：登录�
 ## 1. 骨架
 
 ```
-magpie_plugin_new({ kind: 'provider', packageName: '@magpie-community/opencode-acme-auth', title: 'Acme', id: 'acme', baseUrl: 'https://api.acme.example/v1' })
+magpie_plugin_new({ kind: 'provider', packageName: '@acme/opencode-acme-auth', title: 'Acme', id: 'acme', baseUrl: 'https://api.acme.example/v1' })
 ```
 
 生成的文件：`package.json`、`index.mjs`（config / auth / provider 三个钩子）、`index.test.mjs`、`README.md`。

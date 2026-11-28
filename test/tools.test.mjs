@@ -102,10 +102,10 @@ describe('magpie_plugin_new', () => {
   test('refuses a directory it did not create', async () => {
     const dir = temp()
     await call('magpie_plugin_new', {
-      kind: 'tools', packageName: 'tools-a', dir, description: 'a',
+      kind: 'tools', packageName: '@acme/tools-a', dir, description: 'a',
     })
     await assert.rejects(
-      call('magpie_plugin_new', { kind: 'tools', packageName: 'tools-a', dir, description: 'a' }),
+      call('magpie_plugin_new', { kind: 'tools', packageName: '@acme/tools-a', dir, description: 'a' }),
       /not empty/,
     )
   })
@@ -139,7 +139,7 @@ describe('magpie_plugin_check', () => {
   test('with load, it also calls the plugin functions', async () => {
     const dir = temp()
     await call('magpie_plugin_new', {
-      kind: 'provider', packageName: 'opencode-demo-auth', dir, description: 'd', id: 'demo',
+      kind: 'provider', packageName: '@acme/opencode-demo-auth', dir, description: 'd', id: 'demo',
     })
     const text = render('magpie_plugin_check', await call('magpie_plugin_check', { dir, load: true }))
     assert.match(text, /0 fail/)

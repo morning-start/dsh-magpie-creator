@@ -15,6 +15,8 @@ description: 把 magpie 插件发出去：版本号、npm 发布、magpie:// 链
 
 社区仓库（`magpie-community/plugins`）的包还会在 magpie 启动后不久、之后每小时自动更新。
 
+**包名一律 `@作者名/插件名`**（如 `@acme/calc`）。scoped 是硬要求：裸包名 `magpie_plugin_new` 拒绝、`magpie_plugin_check` 报 `name-scope` fail，因为发出去之后再加作用域会让每个 `magpie plugin add` 过时。kind 不写进名字，由 `magpie` 字段和文件决定。下面第 2 节里 `@magpie-community/<kind>-<name>` 的写法是**社区仓库自己的**分组命名，不是所有包的规矩。
+
 ## 1. 发版前检查
 
 ```

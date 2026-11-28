@@ -51,7 +51,9 @@
 
 **Agent**：`id` 只用小写字母、数字、`.`、`_`、`-`；不能是 magpie 自己的 agent；`library.mcp` 必须配 `magpie` 认识的 `mcpFormat`。
 
-**社区约定**：`@magpie-community/` 的包按形态命名，并且带 `magpie` 关键词。供应商包还需要在 keywords 里有 `opencode` 和 `auth`/`plugin`/`provider` 之一，否则 magpie 的插件页搜索（它向 npm 查 `<关键词> opencode`）找不到它。
+**包名**：所有插件包的包名都是 `@作者名/插件名`——小写 npm 作用域，再一个小写名字（`@acme/calc`、`@morning-start/opencode-acme-auth`）。裸包名是 `fail`（`name-scope`）：说不清是谁的包，而且发出去之后再加作用域，会让每个 `magpie plugin add` 过时。kind **不**在名字里——magpie 从 `magpie` 字段和文件判断——所以 `@acme/toolkit` 可以是页面、`@acme/guard` 可以是中间件。DSH bundle 不是 magpie 插件，不受这条约束。
+
+**社区约定**：`magpie-community/plugins` 仓库按 kind 分组，所以那里的包**确实**是 `<kind>-<name>`（`tools-calc`、`middleware-reserve`），并且带 `magpie` 关键词。供应商包还需要在 keywords 里有 `opencode` 和 `auth`/`plugin`/`provider` 之一，否则 magpie 的插件页搜索（它向 npm 查 `<关键词> opencode`）找不到它。这种分组是**社区仓库**的规矩，不是所有包的规矩。
 
 **用例**：中间件的 `cases.json` 和路由的 `strategies.json` 按社区仓库那个 harness 认的形状检查，所以搬进那个仓库时测试不用改。
 

@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { after, describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { checkPackage, summarize } from '../lib/check.mjs'
-import { KINDS, kindFromName, planFiles, scaffold, shortName } from '../lib/scaffold.mjs'
+import { KINDS, kindFromName, isScopedName, planFiles, scaffold, shortName } from '../lib/scaffold.mjs'
 
 const roots = []
 function fresh() {
@@ -67,20 +67,36 @@ describe('the templates', () => {
   })
 
   test('the same arguments write the same bytes', () => {
-    const a = planFiles({ kind: 'provider', packageName: 'opencode-x-auth', description: 'x' })
-    const b = planFiles({ kind: 'provider', packageName: 'opencode-x-auth', description: 'x' })
+    const a = planFiles({ kind: 'provider', packageName: '@acme/x-auth', description: 'x' })
+    const b = planFiles({ kind: 'provider', packageName: '@acme/x-auth', description: 'x' })
     assert.deepEqual(a, b)
   })
 
   test('a non-empty directory is refused without force', () => {
     const dir = fresh()
-    scaffold({ dir, kind: 'tools', packageName: 'tools-a', description: 'a' })
-    assert.throws(() => scaffold({ dir, kind: 'tools', packageName: 'tools-a', description: 'a' }), /not empty/)
-    assert.doesNotThrow(() => scaffold({ dir, kind: 'tools', packageName: 'tools-a', description: 'a', force: true }))
+    scaffold({ dir, kind: 'tools', packageName: '@acme/tools-a', description: 'a' })
+    assert.throws(() => scaffold({ dir, kind: 'tools', packageName: '@acme/tools-a', description: 'a' }), /not empty/)
+    assert.doesNotThrow(() => scaffold({ dir, kind: 'tools', packageName: '@acme/tools-a', description: 'a', force: true }))
   })
 
-  test('an invalid package name is refused', () => {
-    assert.throws(() => scaffold({ dir: join(fresh(), 'x'), kind: 'tools', packageName: 'Tools Bad' }), /lowercase npm name/)
+  test('a name without a scope is refused', () => {
+    assert.throws(
+      () => scaffold({ dir: join(fresh(), 'x'), kind: 'tools', packageName: 'my-plugin' }),
+      /must be @author\/name/,
+    )
+    assert.throws(
+      () => scaffold({ dir: join(fresh(), 'y'), kind: 'tools', packageName: 'Tools Bad' }),
+      /must be @author\/name/,
+    )
+  })
+
+  test('the @author/name convention is the only one accepted', () => {
+    assert.equal(isScopedName('@acme/calc'), true)
+    assert.equal(isScopedName('@morning-start/opencode-acme-auth'), true)
+    assert.equal(isScopedName('calc'), false)
+    assert.equal(isScopedName('@acme'), false)
+    assert.equal(isScopedName('@Acme/calc'), false)
+    assert.equal(isScopedName('@acme/Calc'), false)
   })
 
   test('the kind comes from the community prefix', () => {

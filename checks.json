@@ -74,7 +74,7 @@
       "type": "json-field",
       "path": "market.json",
       "field": "name",
-      "equals": "magpie 模式"
+      "equals": "Magpie 模式"
     },
     {
       "id": "market-repository",

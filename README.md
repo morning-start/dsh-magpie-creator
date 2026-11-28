@@ -56,6 +56,14 @@ Magpie 模式会：
 | `magpie_registry_entry` | 生成并校验 `registry.json` 条目（magpie 的插件页读的那份，一处类型不对就丢掉全部条目） |
 | `magpie_plugin_accept` | 让 magpie 自己回答：沙箱里装上、读 `plugin --json`、看它会调用哪些钩子 |
 
+### 包名约定：`@author/name`
+
+所有插件包的包名都是 `@作者名/插件名`，例如 `@acme/calc`、`@morning-start/opencode-acme-auth`。
+
+- **作用域是必填的**：`magpie_plugin_new` 拒绝裸包名（`calc`），`magpie_plugin_check` 报 `name-scope` fail。一个没有作用域的包名说不清是谁的，发出去之后又没法加作用域——那会让每一个 `magpie plugin add` 过时。
+- **kind 不写在包名里**：magpie 从 `magpie` 字段和文件判断这个包是什么，所以 `@acme/toolkit` 可以是页面、`@acme/guard` 可以是中间件。
+- 社区仓库 `magpie-community/plugins` 仍按 `<kind>-<name>` 命名（`tools-calc`、`middleware-reserve`），因为那份仓库按 kind 分组；那是**社区仓库**的规矩，不是所有包的规矩。
+
 ## 技能
 
 | Skill | 什么时候用 |
@@ -90,7 +98,7 @@ Magpie 模式会：
 
 ```sh
 node scripts/doctor.mjs                     # 这台机器能不能写插件
-node scripts/new-plugin.mjs --kind page --name @magpie-community/page-notes --dir ./notes
+node scripts/new-plugin.mjs --kind page --name @acme/notes --dir ./notes
 node scripts/repo-handler.mjs ./notes          # 建仓库或更新已有仓库：公开、magpie-plugin topic、repository 指向
 node scripts/check-plugin.mjs <包目录>       # 退出码 1 表示 magpie 会拒绝加载
 node scripts/check-plugin.mjs <包目录> --load  # 再真的 import 它、调用它的插件函数
@@ -131,7 +139,7 @@ lib/                  magpie 定位、包检查、加载检查、脚手架、沙
 skills/               9 个 skill，只在这个包的 provider 下可见
 templates/            7 种插件的模板
 scripts/              命令行入口，和工具共用 lib/
-test/                 158 个测试
+test/                 159 个测试
 docs/                 更长的说明
 ```
 

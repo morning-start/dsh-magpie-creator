@@ -93,10 +93,10 @@ export function apply(ctx) {
   register({
     name: 'magpie_plugin_new',
     description:
-      'Scaffold a magpie plugin package from a template: provider (an OpenCode auth plugin), middleware, routing, tools, page, agent or hooks. Writes package.json, the entry file, a test and a README, then checks the result. Deterministic; installs nothing. The kind is taken from the community package-name prefix unless given.',
+      'Scaffold a magpie plugin package from a template: provider (an OpenCode auth plugin), middleware, routing, tools, page, agent or hooks. Writes package.json, the entry file, a test and a README, then checks the result. Deterministic; installs nothing. The package name must follow @author/name (a lowercase npm scope, then a lowercase name) — a bare name is refused, because it neither says whose package it is nor can be renamed after publishing. The kind comes from the package name if it carries a community prefix, otherwise pass it.',
     parameters: {
-      kind: { type: 'string', enum: Object.keys(KINDS), description: 'Which kind of plugin. Defaults to the kind the package name declares.' },
-      packageName: { type: 'string', required: true, description: 'npm package name, e.g. @magpie-community/tools-calc or opencode-acme-auth' },
+      kind: { type: 'string', enum: Object.keys(KINDS), description: 'Which kind of plugin. Defaults to the kind the package name declares, else provider.' },
+      packageName: { type: 'string', required: true, description: 'npm package name in @author/name form, e.g. @acme/calc or @acme/opencode-acme-auth' },
       dir: { type: 'string', description: 'Directory to create. Defaults to <cwd>/<short name>.' },
       title: { type: 'string', description: 'Display name, e.g. "Acme Coding Plan".' },
       titleZh: { type: 'string', description: 'Chinese display name, for a page tab or a card.' },
@@ -307,9 +307,10 @@ export function apply(ctx) {
       const lines = [`templates: ${join(PACKAGE_ROOT, 'templates')}`, '']
       for (const [kind, info] of Object.entries(KINDS)) {
         if (args.kind && args.kind !== kind) continue
-        const plan = planFiles({ kind, packageName: `${info.prefix.replace('<name>', 'demo')}`, description: 'demo' })
+        // The scaffold takes @author/name now; the sample only shows the shape.
+        const plan = planFiles({ kind, packageName: `@demo/${info.suffix.replace('<name>', 'demo')}`, description: 'demo' })
         lines.push(`${kind} — ${info.what}`)
-        lines.push(`  runtime: ${info.runtime}; entry: ${info.entry}; package name: ${info.prefix}`)
+        lines.push(`  runtime: ${info.runtime}; entry: ${info.entry}; name: @author/${info.suffix}`)
         lines.push(`  files: ${plan.map((file) => file.rel).join(', ')}`)
       }
       return lines.join('\n')

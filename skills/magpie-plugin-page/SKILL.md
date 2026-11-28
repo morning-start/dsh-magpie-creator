@@ -10,7 +10,7 @@ description: 给 magpie 窗口做页面、面板和菜单项：页面（侧边�
 先读 `magpie_plugin_new` 定形态，再回来做界面。生成页面用：
 
 ```
-magpie_plugin_new({ kind: 'page', packageName: '@magpie-community/page-notes', title: 'Notes', titleZh: '笔记', description: '…' })
+magpie_plugin_new({ kind: 'page', packageName: '@acme/notes', title: 'Notes', titleZh: '笔记', description: '…' })
 ```
 
 ## 1. 三种界面，一个包可以都要

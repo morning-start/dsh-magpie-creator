@@ -81,10 +81,22 @@ A middleware must export at least one of `onRequest`, `onEvent`, `onResponse`,
 be one of magpie's own agents; `library.mcp` requires `mcpFormat`, and that
 format must be one magpie knows.
 
-**Community conventions**: `@magpie-community/` packages are named after their
-kind, and carry the `magpie` keyword. A provider package needs `opencode` and
-one of `auth`/`plugin`/`provider` in its keywords, or magpie's Plugins search
-(which asks npm for `<query> opencode`) cannot find it.
+**Package names**: every plugin package is `@author/name` — a lowercase npm
+scope, then a lowercase name (`@acme/calc`, `@morning-start/opencode-acme-auth`).
+A bare name is a `fail` (`name-scope`): it says nothing about whose package it
+is, and once published it cannot gain a scope without breaking every
+`magpie plugin add` that named it. The kind is **not** in the name — magpie
+reads it from the `magpie` field and the files — so `@acme/toolkit` can be a
+page and `@acme/guard` a middleware. A DSH bundle is not a magpie plugin and
+is exempt.
+
+**Community conventions**: the `magpie-community/plugins` repository groups
+its packages by kind, so there a package *is* named `<kind>-<name>`
+(`tools-calc`, `middleware-reserve`), and carries the `magpie` keyword. A
+provider package needs `opencode` and one of `auth`/`plugin`/`provider` in its
+keywords, or magpie's Plugins search (which asks npm for `<query> opencode`)
+cannot find it. That grouping is the community repository's rule, not a rule
+every package follows.
 
 **Cases**: a middleware's `cases.json` and a routing's `strategies.json` are
 checked against the shapes the community repository's harness runs, so a package
