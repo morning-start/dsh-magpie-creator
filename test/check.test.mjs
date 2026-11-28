@@ -26,6 +26,43 @@ after(() => {
   for (const dir of roots) rmSync(dir, { recursive: true, force: true })
 })
 
+describe('a DSH bundle is not a magpie plugin', () => {
+  // Both are npm packages with a `main` and an `exports` map. Read by magpie's
+  // rules, a bundle looked like a provider with no hooks: the check asked for
+  // auth, a loader and models it never has, and the release report handed it a
+  // registry.json entry with a `providers` field that means nothing.
+  const dir = makePackage({
+    'package.json': {
+      name: 'dsh-something',
+      version: '0.1.0',
+      description: 'A DSH bundle',
+      type: 'module',
+      main: './index.js',
+      exports: { '.': './index.js', './tools': './tools/index.js' },
+      files: ['index.js', 'tools'],
+      license: 'MIT',
+      repository: { type: 'git', url: 'git+https://github.com/o/r.git' },
+      dsh: { bundle: { patch: './cordis.patch.yml' } },
+    },
+    'index.js': 'export function apply(ctx) { void ctx }\n',
+    'cordis.patch.yml': '[]\n',
+  })
+  const report = checkPackage(dir)
+
+  test('declares no magpie kind', () => {
+    assert.deepEqual(report.kinds, [])
+  })
+
+  test('fails nothing for having no kind', () => {
+    assert.deepEqual(rules(report, 'fail'), [])
+    assert.equal(summarize(report).fails, 0)
+  })
+
+  test('is recognised as a bundle, not a provider', () => {
+    assert.equal(checkPackage(dir).kinds.includes('provider'), false)
+  })
+})
+
 describe('a good provider', () => {
   const dir = makePackage({
     'package.json': {

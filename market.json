@@ -1,7 +1,7 @@
 {
-  "name": "magpie 模式",
+  "name": "Magpie 模式",
   "description": "开发、调试、测试和发布 magpie 插件：供应商、网关中间件、路由策略、工具、页面、Agent 和异步钩子。",
-  "tagline": "开发 magpie 插件，沙箱独立，不碰你自己的 magpie",
+  "tagline": "开发 magpie 插件：沙箱独立，不碰你自己的 magpie",
   "repository": "https://github.com/morning-start/dsh-magpie-creator",
   "license": "MIT",
   "keywords": [
@@ -13,8 +13,8 @@
     "sandbox"
   ],
   "highlights": [
-    "magpie 模式挂载一套独立沙箱、七套模板和八个技能",
-    "沙箱里真装一次，读 magpie 自己说它加载到了什么",
+    "magpie 模式挂载一套独立沙箱、七套模板和九个技能",
+    "沙箱里真装一次，让 magpie 自己说它加载到了什么",
     "检查器覆盖 moejs 限制、注册表条目和发布前的隐私扫描"
   ]
 }

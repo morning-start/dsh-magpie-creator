@@ -7,7 +7,7 @@ DSH 的「创造模式」管的是 DSH 自己的插件。这个包管的是另�
 装上它以后，新建任务时多一个 **Magpie** 模式，里面有：
 
 - 7 个工具：`magpie_doctor`、`magpie_plugin_new`、`magpie_plugin_check`、`magpie_sandbox`、`magpie_templates`、`magpie_registry_entry`、`magpie_plugin_accept`；
-- 8 个 skill：按「一类插件一个」拆开，模型只在需要时读；
+- 9 个 skill：按「一类插件一个」拆开，模型只在需要时读；
 - 7 套模板：每种插件一个可以直接跑的最小实现，带测试；
 - 沙箱：一个不碰你自己 magpie 的独立 magpie。
 
@@ -67,7 +67,8 @@ Magpie 模式会：
 | `magpie-plugin-page` | 页面、面板、菜单项 |
 | `magpie-plugin-sandbox` | 在沙箱里测，不碰用户的 magpie |
 | `magpie-plugin-debug` | 装不上 / 不生效 / 登录失败 / 页白屏 |
-| `magpie-plugin-release` | 发版、npm、`magpie://` 链接、registry.json、GitHub 标签 |
+| `magpie-plugin-release` | 发版、`magpie://` 链接、registry.json、GitHub 标签 |
+| `npm-package-manager` | npm 账号侧：Trusted Publisher、token 与 OIDC、dist-tag、deprecate、404/403/ENEEDAUTH 反查 |
 
 ## 模板
 
@@ -127,10 +128,10 @@ index.js              Host 行（今天只占位，注册任何东西都在 ctx.
 cordis.patch.yml      bundle patch：一个 Host 行 + 一个 magpie 预设
 tools/index.js        7 个工具，只挂进 magpie 预设
 lib/                  magpie 定位、包检查、加载检查、脚手架、沙箱、registry、doctor
-skills/               8 个 skill，只在这个包的 provider 下可见
+skills/               9 个 skill，只在这个包的 provider 下可见
 templates/            7 种插件的模板
 scripts/              命令行入口，和工具共用 lib/
-test/                 150 个测试
+test/                 158 个测试
 docs/                 更长的说明
 ```
 

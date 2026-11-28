@@ -165,6 +165,12 @@
       "equals": "magpie-plugin-release"
     },
     {
+      "id": "skills-npm",
+      "type": "frontmatter-name",
+      "path": "skills/npm-package-manager/SKILL.md",
+      "equals": "npm-package-manager"
+    },
+    {
       "id": "lib-logs-nothing",
       "type": "no-console",
       "root": "lib",

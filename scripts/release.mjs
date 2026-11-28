@@ -6,9 +6,9 @@
 // Checks the package, then prints what a release needs: the version, the files
 // npm ships, a registry.json entry that passes magpie's own reader, and the
 // commands. Writes nothing.
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { checkPackage, summarize } from '../lib/check.mjs'
+import { checkPackage, isDshBundle, summarize } from '../lib/check.mjs'
 import { registryEntry, registryProblems } from '../lib/registry.mjs'
 import { scanPrivacy } from '../lib/privacy.mjs'
 
@@ -47,20 +47,57 @@ if (fails) {
 
 const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
 const shipped = Array.isArray(pkg.files) ? pkg.files : ['(everything not ignored)']
+// `files` holds npm's own patterns, not paths: `locale/*.json` and `docs` both
+// mean "whatever is there". Summing only what statSync can open reported a
+// pattern as a missing file, which is the one thing that list must never do.
+function shippedSize(entry) {
+  if (!entry.includes('*')) {
+    try {
+      const stat = statSync(join(dir, entry))
+      if (!stat.isDirectory()) return stat.size
+      let total = 0
+      for (const name of readdirSync(join(dir, entry), { withFileTypes: true })) {
+        total += name.isDirectory() ? shippedSize(`${entry}/${name.name}`) : statSync(join(dir, entry, name.name)).size
+      }
+      return total
+    } catch {
+      return null
+    }
+  }
+  const slash = entry.lastIndexOf('/')
+  const parent = slash < 0 ? '.' : entry.slice(0, slash)
+  const suffix = entry.slice(entry.lastIndexOf('*') + 1)
+  try {
+    let total = 0
+    for (const name of readdirSync(join(dir, parent), { withFileTypes: true })) {
+      if (name.isDirectory() || !name.name.endsWith(suffix)) continue
+      total += statSync(join(dir, parent, name.name)).size
+    }
+    return total
+  } catch {
+    return null
+  }
+}
 let size = 0
 for (const entry of shipped) {
-  try {
-    const path = join(dir, entry)
-    const stat = statSync(path)
-    size += stat.isDirectory() ? 0 : stat.size
-  } catch {
-    console.log(`! files lists ${entry}, which does not exist`)
-  }
+  const bytes = shippedSize(entry)
+  if (bytes === null) console.log(`! files lists ${entry}, which does not exist`)
+  else size += bytes
 }
 console.log('')
 console.log(`name:    ${pkg.name}`)
 console.log(`version: ${pkg.version}`)
 console.log(`files:   ${shipped.join(', ')}${size ? ` (${Math.round(size / 1024)} KiB)` : ''}`)
+
+// A DSH bundle is not a magpie plugin: it belongs in no magpie registry, and
+// the entry builder would hand it a `providers` field that means nothing.
+if (isDshBundle(pkg)) {
+  console.log('')
+  console.log('this is a DSH bundle, not a magpie plugin: no registry.json entry, and')
+  console.log('magpie has nothing to install. It is published to npm and installed with')
+  console.log(`  dsh plugin add ${pkg.name}@${pkg.version}`)
+  process.exit(0)
+}
 
 const entry = registryEntry(pkg, report.kinds, { summaryZh })
 const problems = registryProblems(JSON.stringify({ version: 1, plugins: [entry] }))

@@ -12,7 +12,7 @@
 
 ## 这个仓库是什么
 
-一个 DSH bundle：一条 Host 行加一个 `magpie` 预设（`cordis.patch.yml`），再加 7 个工具、8 个 skill、7 套模板和一套检查 / 沙箱 / 发布用的 lib 与命令行。它自己不执行 magpie 插件，而是生成、检查、在沙箱里装、并帮你发布 magpie 插件。
+一个 DSH bundle：一条 Host 行加一个 `magpie` 预设（`cordis.patch.yml`），再加 7 个工具、9 个 skill、7 套模板和一套检查 / 沙箱 / 发布用的 lib 与命令行。它自己不执行 magpie 插件，而是生成、检查、在沙箱里装、并帮你发布 magpie 插件。
 
 ## 结构
 
@@ -21,10 +21,10 @@ index.js              Host 行，只占位；注册东西都写在 ctx.effect �
 cordis.patch.yml      bundle patch：Host 行 + magpie 预设（含逐字复制的 preset-cordis 段）
 tools/index.js        7 个工具，只挂进 magpie 预设
 lib/                  magpie 定位、包检查、加载检查、脚手架、沙箱、registry、doctor、隐私扫描、建仓库
-skills/               8 个 skill，各自一个目录一个 SKILL.md
+skills/               9 个 skill，各自一个目录一个 SKILL.md
 templates/            7 种 magpie 插件的最小实现，带测试；`_release/` 是共用的发版工作流
 scripts/              13 个命令行入口，和工具共用 lib/
-test/                 150 个测试（node --test）
+test/                 158 个测试（node --test）
 docs/                 实现说明与验证记录
 market.json           商店卡片元数据
 checks.json           本仓库自己的检查规则（dsh_project_check）
@@ -34,7 +34,7 @@ checks.json           本仓库自己的检查规则（dsh_project_check）
 ## 开发循环
 
 1. 改代码。逻辑在 `lib/`，工具入参在 `tools/index.js`，命令行入口在 `scripts/`。
-2. 跑 `node scripts/check-project.mjs .`：manifest、patch 对齐、技能格式、语法、隐私扫描、150 个测试，一次跑完。必须全绿。
+2. 跑 `node scripts/check-project.mjs .`：manifest、patch 对齐、技能格式、语法、隐私扫描、158 个测试，一次跑完。必须全绿。
 3. `dsh_plugin_check`（0 fail）和 `dsh_project_check`（`checks.json` 0 fail）也过一遍。
 4. 动到发布面（`package.json` 的 `files`、入口、依赖）时，再跑 `dsh_plugin_release check` → `pack` → `rehearse`，确认打出来的包能在沙箱里装上、组合出来。
 5. 新增工具 / skill / 模板时，这些地方要一起改：`tools/index.js`（注册）、`locale/en.json` + `locale/zh.json`（键要对称）、`checks.json`（skill 的 frontmatter 规则）、`README.md` 的工具 / 技能表、模板列表。
@@ -86,7 +86,7 @@ dsh plugin --profile <profile> add dsh-magpie-creator@<版本>
 
 ## 发布前清单
 
-- [ ] `node scripts/check-project.mjs .` 全绿（150 个测试）
+- [ ] `node scripts/check-project.mjs .` 全绿（158 个测试）
 - [ ] `dsh_plugin_check` 0 fail
 - [ ] `dsh_project_check` 0 fail
 - [ ] `dsh_plugin_release check` 和 `rehearse` 通过

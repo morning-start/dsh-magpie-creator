@@ -84,22 +84,11 @@ git push --follow-tags
 
 工作流会核对 tag 与 `package.json` 的版本（不一致直接失败）、核对 `repository` 指向当前 GitHub 仓库（provenance 需要）、跑 `bun test`、`npm publish --provenance --access public`，再开一个 GitHub Release。
 
-- 认证两条路：在 npm 包设置里把仓库和 `publish.yml` 配成 trusted publisher（OIDC），或者给仓库加一个 `NPM_TOKEN` secret——工作流检测到 secret 就用它写 `.npmrc`，两者都在时 token 优先；
-- 没有这个文件的老包，手动发：`npm publish --access public`；
 - 包名带 scope 时要 `--access public`；
-- 安装脚本不会运行（magpie 用 `bun add` 且不跑 install scripts），所以**不要依赖 postinstall 构建**。
+- 安装脚本不会运行（magpie 用 `bun add` 且不跑 install scripts），所以**不要依赖 postinstall 构建**；
+- 没有这个文件的老包，手动发：`npm publish --access public`。
 
-**第一次发布**：trusted publishing 只对已经存在的包有效，所以首版二选一：
-
-- 给仓库加 `NPM_TOKEN` secret，照常打 tag——工作流用 token 建包（存在性检查会跳过）；
-- 不配 token，就在本地手动发一次：
-
-```sh
-npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
-npm publish --access public
-```
-
-发完去 npm 包设置里配 trusted publisher（这个仓库 + `publish.yml`），或者继续用 secret。工作流里也拦了一道：没有 token 且包还不在 npm 上时，它直接告诉你要先手动发，而不是抛一个看起来像权限问题的 404。
+**认证、Trusted Publisher、首版、dist-tag、发错了怎么救、404/403/ENEEDAUTH 怎么反查**——这些是 npm 账号侧的事，不在这里重复，看 `npm-package-manager` 技能。magpie 这边只需记住两条：社区仓库推 `main` 就发，自己的仓库打 tag 就发。
 
 ## 5. 让用户找到它
 
