@@ -13,8 +13,7 @@
   "homepage": "https://github.com/morning-start/dsh-magpie-creator#readme",
   "author": "morning-start",
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "exports": {
     ".": "./index.js",
@@ -66,6 +65,7 @@
     "agent-preset"
   ],
   "engines": {
+    "node": ">=22.15",
     "dsh": ">=0.2.2-rc.5"
   },
   "license": "MIT",

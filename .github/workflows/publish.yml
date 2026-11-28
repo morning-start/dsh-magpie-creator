@@ -1,0 +1,46 @@
+name: publish
+
+# A release is a tag, and only a tag: `git tag v0.1.1 && git push origin v0.1.1`.
+# The workflow refuses a tag that does not match package.json, runs the checks CI
+# runs on every push, publishes with provenance, and opens the GitHub release.
+# Publishing by hand still works; it just carries no provenance.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write # create the GitHub release
+  id-token: write # OIDC: npm provenance and trusted publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Trusted publishing needs an npm that speaks OIDC (11.5.1 and later).
+      - name: Use the npm that can publish with provenance
+        run: npm install -g npm@latest
+      - name: The tag and the manifest agree
+        run: |
+          version="$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version")"
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$version" != "$tag" ]; then
+            echo "tag $GITHUB_REF_NAME does not match package.json $version" >&2
+            exit 1
+          fi
+          echo "publishing $version"
+      - name: The project checks itself
+        run: node scripts/check-project.mjs .
+      # No NODE_AUTH_TOKEN on purpose: the package is a trusted publisher for
+      # this repository and this workflow file. To fall back to a token, add an
+      # NPM_TOKEN secret and set NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} here.
+      - name: Publish
+        run: npm publish --provenance --access public
+      - name: Open the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
