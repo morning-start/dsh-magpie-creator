@@ -32,8 +32,7 @@
         id: magpie
         name: magpie 模式
         description: >-
-          在 DeepSeek Harness 里开发、调试、测试和发布 magpie 插件：供应商、网关中间件、
-          路由策略、工具、页面、Agent 和异步钩子。自带 magpie 命令行、独立沙箱和七套模板。
+          开发、调试和发布 magpie 插件：模板生成、沙箱验证、发版前检查。
         order: 5
         plugins:
           # --- shipped preset-cordis (verbatim, re-indented) ---
