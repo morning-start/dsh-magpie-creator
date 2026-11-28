@@ -1,5 +1,5 @@
 /**
- * Host half of `dsh-magpie-creator`.
+ * Host half of `@morning-start/dsh-magpie-creator`.
  *
  * The capability half lives in `./tools`, which the bundle patch mounts inside
  * the Magpie mode preset (`preset-magpie`) only. This row exists so the bundle

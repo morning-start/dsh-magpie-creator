@@ -60,7 +60,7 @@ export function apply(ctx) {
     // renamed it from failing at import time.
     if (typeof ctx.tools?.register === 'function') ctx.tools.register(definition)
     else if (typeof ctx.tool === 'function') ctx.tool(definition)
-    else throw new Error('dsh-magpie-creator/tools needs the DSH tools service')
+    else throw new Error('@morning-start/dsh-magpie-creator/tools needs the DSH tools service')
   }
 
   register({

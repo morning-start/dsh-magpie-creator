@@ -1,4 +1,4 @@
-# dsh-magpie-creator
+# @morning-start/dsh-magpie-creator
 
 > Magpie 模式：在 DeepSeek Harness 里开发、调试、测试和发布 [magpie](https://usemagpie.ai) 插件。
 

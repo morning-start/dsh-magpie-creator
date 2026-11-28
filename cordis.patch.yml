@@ -23,7 +23,7 @@
 
 - insert:
     - id: magpie-host
-      name: 'dsh-magpie-creator'
+      name: '@morning-start/dsh-magpie-creator'
 
 - insert:
     - id: preset-magpie
@@ -176,7 +176,7 @@
           # Tools: `./tools` registers magpie_doctor, magpie_plugin_new,
           # magpie_plugin_check and magpie_sandbox on this preset's context.
           - id: magpie-tools
-            name: 'dsh-magpie-creator/tools'
+            name: '@morning-start/dsh-magpie-creator/tools'
 
           # Skills: a second filesystem provider, isolated to this package's own
           # `skills/` directory. `includeDefaultRoots: false` keeps it from
@@ -187,4 +187,4 @@
               providerName: magpie
               includeDefaultRoots: false
               customSkillDirs:
-                - !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('dsh-magpie-creator/package.json')), 'skills')
+                - !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('@morning-start/dsh-magpie-creator/package.json')), 'skills')

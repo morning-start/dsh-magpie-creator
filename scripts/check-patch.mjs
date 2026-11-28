@@ -32,7 +32,7 @@ for (const id of ['magpie-host', 'preset-magpie', 'magpie-tools', 'magpie-skills
   if (!row(id)) problems.push(`the patch has no row ${id}`)
 }
 if (!/^[ \t]*id:[ \t]*magpie[ \t]*$/m.test(patch)) problems.push('preset-magpie declares no preset id')
-if (!/name:\s*'dsh-magpie-creator\/tools'/.test(patch)) problems.push('magpie-tools does not mount dsh-magpie-creator/tools')
+if (!/name:\s*'@morning-start\/dsh-magpie-creator\/tools'/.test(patch)) problems.push('magpie-tools does not mount @morning-start/dsh-magpie-creator/tools')
 if (!/providerName:\s*magpie/.test(patch)) problems.push('the skills row is not isolated to the magpie provider')
 
 // The header comment mentions both markers, so the block is between the last

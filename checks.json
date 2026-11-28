@@ -60,7 +60,7 @@
       "type": "json-field",
       "path": "package.json",
       "field": "name",
-      "equals": "dsh-magpie-creator"
+      "equals": "@morning-start/dsh-magpie-creator"
     },
     {
       "id": "package-type",

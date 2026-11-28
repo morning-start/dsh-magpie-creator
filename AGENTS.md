@@ -77,12 +77,12 @@ git push --follow-tags     # 推 main 和 tag
 - 这个包 0.2.0 用的是本地手动发，0.2.1 起由仓库 secret `NPM_TOKEN` 发；新包首版也可以加 secret 后直接 tag（工作流用 token 建包），不配 secret 才需先本地手动发一次。
 - token 是长期密钥，能配 OIDC 就配 OIDC。
 - 已经发过的版本不能重发：改代码，发下一个 patch。
-- 发错了：`npm deprecate dsh-magpie-creator@<版本> "原因"`，再发一个补丁版；不要 `npm unpublish`。
+- 发错了：`npm deprecate @morning-start/dsh-magpie-creator@<版本> "原因"`，再发一个补丁版；不要 `npm unpublish`。
 
 发布后在一个干净 profile 里装一次，确认模式卡、工具、skill 都在：
 
 ```sh
-dsh plugin --profile <profile> add dsh-magpie-creator@<版本>
+dsh plugin --profile <profile> add @morning-start/dsh-magpie-creator@<版本>
 ```
 
 ## 发布前清单
