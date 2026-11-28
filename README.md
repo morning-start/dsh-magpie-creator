@@ -83,7 +83,7 @@ Magpie 模式会：
 | `agent` | moejs | `{{short}}.test.mjs` |
 | `hooks` | Bun | `{{short}}.test.mjs` |
 
-每个模板还带一份 `.github/workflows/publish.yml`：本地改 `package.json` 的 `version`，提交，打 `v<版本>` tag 推上去，GitHub Actions 会核对 tag 和版本号、跑 `bun test`、带 provenance 发到 npm，再开一个 GitHub Release。第一个版本（`0.1.0`）要在本地手动发：npm 只给已经存在的包配 trusted publishing，所以带 `NPM_TOKEN` 手动 `npm publish --access public` 一次，再去 npm 包设置里配 trusted publisher，之后才交给 Actions；不想配 trusted publisher 的话，给仓库加一个 `NPM_TOKEN` secret 也可以，工作流会用它发。
+每个模板还带一份 `.github/workflows/publish.yml`：本地改 `package.json` 的 `version`，提交，打 `v<版本>` tag 推上去，GitHub Actions 会核对 tag 和版本号、跑 `bun test`、带 provenance 发到 npm，再开一个 GitHub Release。第一个版本要注意：trusted publishing 只对已经存在的包有效，所以要么本地手动发一次，要么给仓库加 `NPM_TOKEN` secret 让 Action 用 token 建包；之后 tag 就行。
 
 ## 命令
 

@@ -89,14 +89,17 @@ git push --follow-tags
 - 包名带 scope 时要 `--access public`；
 - 安装脚本不会运行（magpie 用 `bun add` 且不跑 install scripts），所以**不要依赖 postinstall 构建**。
 
-**第一次发布是例外**：npm 只给已经存在的包配 trusted publishing，所以 `0.1.0` 要在本地手动发一次：
+**第一次发布**：trusted publishing 只对已经存在的包有效，所以首版二选一：
+
+- 给仓库加 `NPM_TOKEN` secret，照常打 tag——工作流用 token 建包（存在性检查会跳过）；
+- 不配 token，就在本地手动发一次：
 
 ```sh
 npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
 npm publish --access public
 ```
 
-发完去 npm 包设置里配 trusted publisher（这个仓库 + `publish.yml`），或者给仓库加一个 `NPM_TOKEN` secret；从下一个版本起才走 tag 和 Actions。工作流里也拦了一道：包还不在 npm 上时，它直接告诉你要先手动发，而不是抛一个看起来像权限问题的 404。
+发完去 npm 包设置里配 trusted publisher（这个仓库 + `publish.yml`），或者继续用 secret。工作流里也拦了一道：没有 token 且包还不在 npm 上时，它直接告诉你要先手动发，而不是抛一个看起来像权限问题的 404。
 
 ## 5. 让用户找到它
 

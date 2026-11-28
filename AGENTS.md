@@ -73,7 +73,7 @@ git push --follow-tags     # 推 main 和 tag
 
 - 认证两条路：npm trusted publishing（OIDC），在包设置里把仓库和 `publish.yml` 配成 trusted publisher；或者仓库 secret `NPM_TOKEN`，工作流检测到就用它写 `.npmrc` 再发布。两者都在时 secret 优先，删掉 secret 就回到 OIDC。
 - granular token 不能改 trusted publisher（npm 会 403：「Granular access tokens that bypass two-factor authentication may not perform this action」）——要上 OIDC 只能在网页上配，配好后删掉 secret。
-- 这个包 0.2.0 是用 `NPM_TOKEN` secret 发的；0.2.0 之前是本地手动。新包的第一个版本也必须本地手动（包不存在就配不了 trusted publisher）。
+- 这个包 0.2.0 用的是本地手动发，0.2.1 起由仓库 secret `NPM_TOKEN` 发；新包首版也可以加 secret 后直接 tag（工作流用 token 建包），不配 secret 才需先本地手动发一次。
 - token 是长期密钥，能配 OIDC 就配 OIDC。
 - 已经发过的版本不能重发：改代码，发下一个 patch。
 - 发错了：`npm deprecate dsh-magpie-creator@<版本> "原因"`，再发一个补丁版；不要 `npm unpublish`。

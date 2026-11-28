@@ -9,11 +9,11 @@
 # manifest names this GitHub repository (npm provenance needs that), runs the
 # tests, and publishes that version to npm with provenance.
 #
-# The FIRST version of a brand-new package is the exception: npm only offers
-# trusted publishing for packages that already exist, so version 0.1.0 is
-# published once by hand with an npm token, and the trusted publisher (this
-# repository + publish.yml) is configured in the package settings afterwards.
-# Every version after that is a tag.
+# The FIRST version of a brand-new package needs a token: trusted publishing
+# only exists for packages that are already on npm. Either add a repository
+# NPM_TOKEN secret and tag 0.1.0 like any other version, or publish 0.1.0 once
+# by hand and configure the trusted publisher (this repository + publish.yml)
+# in the package settings afterwards. From then on a tag is enough.
 name: publish
 
 on:
@@ -67,18 +67,24 @@ jobs:
       #   run: bun install --frozen-lockfile
       - name: Test
         run: bun test
-      # A package that is not on npm yet has no trusted publisher to use: the
-      # first version is manual (see the header). Say so, instead of letting
-      # `npm publish` fail with a 404 that reads like a permissions problem.
-      - name: The package exists on npm
+      # Without a token, a package that is not on npm yet has no trusted publisher to
+      # use, so the first version has to be published by hand (see the header).
+      # With a token the package can be created right here, so the check is skipped.
+      - name: A package that is not on npm yet needs a token
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          if [ -n "${NPM_TOKEN}" ]; then
+            echo "an NPM_TOKEN secret can create the package; skipping the npm existence check"
+            exit 0
+          fi
           name="$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).name")"
           if ! npm view "$name" version >/dev/null 2>&1; then
             echo "$name is not on npm yet (or npm could not be reached), and trusted publishing only exists for packages that are." >&2
             echo "publish the first version from your machine with an npm token:" >&2
             echo "  npm config set //registry.npmjs.org/:_authToken \"\$NPM_TOKEN\"" >&2
             echo "  npm publish --access public" >&2
-            echo "then add the trusted publisher (this repository + publish.yml) in the package settings on npmjs.com." >&2
+            echo "or add a repository NPM_TOKEN secret and tag the first version instead." >&2
             exit 1
           fi
       # Two ways to authenticate: trusted publishing (OIDC), when the package names
