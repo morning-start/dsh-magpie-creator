@@ -1,0 +1,92 @@
+# The release this package ships with: a tag publishes, nothing else does.
+#
+#   1. bump "version" in package.json
+#   2. commit it
+#   3. git tag v0.1.1
+#   4. git push --follow-tags
+#
+# This workflow then checks the tag against package.json, checks that the
+# manifest names this GitHub repository (npm provenance needs that), runs the
+# tests, and publishes that version to npm with provenance.
+#
+# The FIRST version of a brand-new package is the exception: npm only offers
+# trusted publishing for packages that already exist, so version 0.1.0 is
+# published once by hand with an npm token, and the trusted publisher (this
+# repository + publish.yml) is configured in the package settings afterwards.
+# Every version after that is a tag.
+name: publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write # create the GitHub release
+  id-token: write # OIDC: npm provenance and trusted publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Trusted publishing needs an npm that speaks OIDC (11.5.1 and later).
+      - name: Use the npm that can publish with provenance
+        run: npm install -g npm@latest
+      - name: The manifest names this repository
+        run: |
+          url="$(node -p "(() => { const p = JSON.parse(require('fs').readFileSync('package.json', 'utf8')); return (p.repository && p.repository.url) || p.repository || '' })()")"
+          url="${url#git+}"
+          url="${url%.git}"
+          want="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+          want="${want%.git}"
+          if [ "${url,,}" != "${want,,}" ]; then
+            echo "package.json repository is ${url:-<missing>}; expected ${want}" >&2
+            echo "set repository.url to this repository before publishing: npm provenance records where the package came from" >&2
+            exit 1
+          fi
+      - name: The tag and the manifest agree
+        run: |
+          version="$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version")"
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$version" != "$tag" ]; then
+            echo "tag $GITHUB_REF_NAME does not match package.json $version" >&2
+            echo "bump the version, commit it, and tag that commit" >&2
+            exit 1
+          fi
+          echo "publishing $version"
+      # The templates declare no runtime dependencies. A package that adds some
+      # installs them here, before the tests:
+      # - name: Install
+      #   run: bun install --frozen-lockfile
+      - name: Test
+        run: bun test
+      # A package that is not on npm yet has no trusted publisher to use: the
+      # first version is manual (see the header). Say so, instead of letting
+      # `npm publish` fail with a 404 that reads like a permissions problem.
+      - name: The package exists on npm
+        run: |
+          name="$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).name")"
+          if ! npm view "$name" version >/dev/null 2>&1; then
+            echo "$name is not on npm yet (or npm could not be reached), and trusted publishing only exists for packages that are." >&2
+            echo "publish the first version from your machine with an npm token:" >&2
+            echo "  npm config set //registry.npmjs.org/:_authToken \"\$NPM_TOKEN\"" >&2
+            echo "  npm publish --access public" >&2
+            echo "then add the trusted publisher (this repository + publish.yml) in the package settings on npmjs.com." >&2
+            exit 1
+          fi
+      # No NODE_AUTH_TOKEN on purpose: the package is a trusted publisher for
+      # this repository and this workflow file. To fall back to a token, add an
+      # NPM_TOKEN secret and set NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} here.
+      - name: Publish
+        run: npm publish --provenance --access public
+      - name: Open the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes

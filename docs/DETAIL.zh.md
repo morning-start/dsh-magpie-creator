@@ -164,7 +164,7 @@
 - **社区**：贡献到 `magpie-community/plugins`，放 `packages/<name>`，包名 `@magpie-community/opencode-<name>-auth` / `middleware-<name>` / `tools-<name>` / `page-<name>` / `agent-<name>`，除非确实需要不要有运行时依赖；改版本号推到 `main` 就发布，这些包在每个 magpie 里自动更新。
 - **推荐列表**：`registry.json` 每六小时拉一次、内置一份副本；`MAGPIE_PLUGIN_MARKET=<url>` 换一份列表用来**检查自己的条目**，设 `off` 只用内置副本。
 
-这些是 magpie 的规则，不是我们的；`magpie_plugin_release` 里能自动化的只有前两步（npm 与 `registry.json` 条目），`magpie://` 链接和 GitHub topic 是用户要在自己那边点的。
+这些是 magpie 的规则，不是我们的；`magpie_plugin_release` 里能自动化的只有前两步（npm 与 `registry.json` 条目），`magpie://` 链接和 GitHub topic 是用户要在自己那边点的。模板生成的包自带 `.github/workflows/publish.yml`，所以 npm 那一步就是一个 tag：改 `version`、提交、`git tag v<版本>`、`git push --follow-tags`——工作流核对 tag 与 manifest、跑 `bun test`、带 provenance 发布，再开 GitHub Release。没有这个文件的老包，npm、topic 和 `registry.json` 的 PR 还是用户自己点。
 
 ## 预设副本
 

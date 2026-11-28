@@ -63,6 +63,10 @@ magpie_plugin_new({
 
 生成器是确定性的：同一组参数永远产出同样的文件。**不要手写 package.json 再改**，也不要复制模板目录——生成器会顺带跑一遍检查。
 
+生成的包里除了入口和测试，还有 `README.md` 和 `.github/workflows/publish.yml`：改版本号、打 `v<版本>` tag、推上去，GitHub Actions 就会跑测试并发布到 npm。发版细节见 `magpie-plugin-release`。
+
+包做完就用 `node scripts/repo-handler.mjs <包目录>` 处理仓库：没有仓库就建一个公开的；已有仓库就更新可见性、补 `magpie-plugin` topic（magpie 的「发现」靠它），并把 `package.json` 的 `repository` 指过去。
+
 命令行等价物（无人对话时用）：
 
 ```sh

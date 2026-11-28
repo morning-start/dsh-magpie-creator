@@ -6,7 +6,7 @@
 // Checks the package, then prints what a release needs: the version, the files
 // npm ships, a registry.json entry that passes magpie's own reader, and the
 // commands. Writes nothing.
-import { readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { checkPackage, summarize } from '../lib/check.mjs'
 import { registryEntry, registryProblems } from '../lib/registry.mjs'
@@ -76,7 +76,20 @@ if (problems.length) {
 
 console.log('')
 console.log('release:')
-if (pkg.name.startsWith('@magpie-community/')) {
+// A scaffolded package ships .github/workflows/publish.yml, so the tag is the
+// whole release: the workflow checks the tag against package.json, tests, and
+// publishes. Older packages without it still publish by hand.
+const hasWorkflow = existsSync(join(dir, '.github', 'workflows', 'publish.yml'))
+if (hasWorkflow) {
+  console.log('  bump "version" in package.json, commit it, then:')
+  console.log(`    git tag v${pkg.version} && git push --follow-tags`)
+  console.log('  .github/workflows/publish.yml publishes that tag to npm with provenance')
+  if (pkg.version === '0.1.0') {
+    console.log('  (0.1.0 is the first version: publish it by hand with an NPM_TOKEN and add the trusted')
+    console.log('   publisher first — a package that does not exist yet cannot have one)')
+  }
+  console.log('  tag the repository magpie-plugin so Discover → Unofficial lists it')
+} else if (pkg.name.startsWith('@magpie-community/')) {
   console.log('  bump the version and push to main — publish.yml packs it onto the dist branch and publishes it to npm')
   console.log('  (a new package is listed in magpie as soon as the pull request is merged: it installs from dist, never waiting for npm)')
 } else {

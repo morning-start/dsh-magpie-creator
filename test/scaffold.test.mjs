@@ -43,6 +43,7 @@ describe('the templates', () => {
       })
       assert.ok(result.files.includes('package.json'))
       assert.ok(result.files.includes('README.md'))
+      assert.ok(result.files.includes('.github/workflows/publish.yml'), 'every kind ships a release workflow')
       assert.ok(result.files.some((file) => file.endsWith('.test.mjs')), 'every kind ships a test')
 
       const report = checkPackage(dir)
@@ -52,6 +53,18 @@ describe('the templates', () => {
       assert.deepEqual(report.kinds, [kind])
     })
   }
+
+  test('the release workflow publishes a tag and refuses a mismatched version', () => {
+    const dir = join(fresh(), 'release')
+    scaffold({ dir, kind: 'tools', packageName: '@magpie-community/tools-demo', description: 'demo' })
+    const workflow = readFileSync(join(dir, '.github/workflows/publish.yml'), 'utf8')
+    assert.match(workflow, /tags:\n\s+- 'v\*'/)
+    assert.match(workflow, /npm publish --provenance --access public/)
+    assert.match(workflow, /GITHUB_REF_NAME#v/)
+    assert.match(workflow, /bun test/)
+    assert.ok(workflow.includes('npm view "$name" version'), 'a package that is not on npm yet is told to publish by hand')
+    assert.doesNotMatch(workflow, /\{\{\w+\}\}/, 'no template placeholder is left unfilled')
+  })
 
   test('the same arguments write the same bytes', () => {
     const a = planFiles({ kind: 'provider', packageName: 'opencode-x-auth', description: 'x' })

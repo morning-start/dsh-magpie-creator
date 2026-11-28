@@ -338,8 +338,13 @@ paths, and magpie's rules differ for each:
   bundled fallback; `MAGPIE_PLUGIN_MARKET=<url>` swaps the list so an entry can
   be **tested**, and `off` keeps only the bundled copy.
 
-`scripts/release.mjs` automates the checks before these steps. Publishing to npm,
-adding the topic, and opening the `registry.json` PR are the user's own clicks.
+`scripts/release.mjs` automates the checks before these steps. A package this
+toolkit scaffolds ships `.github/workflows/publish.yml`, so the npm step is a
+tag: bump `version`, commit, `git tag v<version>`, `git push --follow-tags`. The
+workflow checks the tag against the manifest, runs `bun test`, publishes with
+provenance, and opens a GitHub release. For a package without it, publishing to
+npm, adding the topic, and opening the `registry.json` PR remain the user's own
+clicks.
 
 ## The preset copy
 
