@@ -37,6 +37,12 @@
       "message": "the market entry exists"
     },
     {
+      "id": "release-workflow-template",
+      "type": "file-exists",
+      "path": "templates/_release/.github/workflows/publish.yml",
+      "message": "new packages get the tag-triggered release workflow"
+    },
+    {
       "id": "bundle-patch-declared",
       "type": "json-field",
       "path": "package.json",
@@ -68,7 +74,7 @@
       "type": "json-field",
       "path": "market.json",
       "field": "name",
-      "equals": "Magpie"
+      "equals": "magpie 模式"
     },
     {
       "id": "market-repository",
@@ -89,6 +95,10 @@
       "manifest": "package.json",
       "exclude": [
         ".gitignore",
+        ".gitattributes",
+        ".github",
+        "AGENTS.md",
+        "LICENSE",
         "checks.json",
         "test",
         "tmp",
