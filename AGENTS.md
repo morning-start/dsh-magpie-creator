@@ -71,9 +71,10 @@ git push --follow-tags     # 推 main 和 tag
 
 `.github/workflows/publish.yml` 只在 tag 上跑：核对 tag 与 `package.json` 的版本号（不一致直接失败）、跑 `check-project`、`npm publish --provenance --access public`、用 tag 开 GitHub Release。
 
-- 认证走 npm trusted publishing（OIDC），不需要 `NPM_TOKEN`。第一次发版前在 npm 包设置 → Settings → Trusted Publisher → GitHub Actions，填 owner、repo、workflow `publish.yml`，environment 留空。
-- 新包的第一个版本要先在本地手动发（带 `NPM_TOKEN`）：npm 只给已经存在的包配 trusted publisher。这个仓库的包已经发过，直接走 tag。
-- 不想用 OIDC 才加 `NPM_TOKEN` secret，并在 Publish 步骤设 `NODE_AUTH_TOKEN`（`publish.yml` 里有注释标位置）。token 是长期密钥，能不用就别用。
+- 认证两条路：npm trusted publishing（OIDC），在包设置里把仓库和 `publish.yml` 配成 trusted publisher；或者仓库 secret `NPM_TOKEN`，工作流检测到就用它写 `.npmrc` 再发布。两者都在时 secret 优先，删掉 secret 就回到 OIDC。
+- granular token 不能改 trusted publisher（npm 会 403：「Granular access tokens that bypass two-factor authentication may not perform this action」）——要上 OIDC 只能在网页上配，配好后删掉 secret。
+- 这个包 0.2.0 是用 `NPM_TOKEN` secret 发的；0.2.0 之前是本地手动。新包的第一个版本也必须本地手动（包不存在就配不了 trusted publisher）。
+- token 是长期密钥，能配 OIDC 就配 OIDC。
 - 已经发过的版本不能重发：改代码，发下一个 patch。
 - 发错了：`npm deprecate dsh-magpie-creator@<版本> "原因"`，再发一个补丁版；不要 `npm unpublish`。
 
