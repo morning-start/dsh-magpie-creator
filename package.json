@@ -25,6 +25,7 @@
   },
   "scripts": {
     "new": "node scripts/new-plugin.mjs",
+    "repo": "node scripts/repo-handler.mjs",
     "check": "node scripts/check-plugin.mjs",
     "check:load": "node scripts/check-plugin.mjs --load",
     "check:registry": "node scripts/check-registry.mjs",
