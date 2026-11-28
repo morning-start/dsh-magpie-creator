@@ -6,7 +6,7 @@ DSH 的「创造模式」管的是 DSH 自己的插件。这个包管的是另�
 
 装上它以后，新建任务时多一个 **Magpie** 模式，里面有：
 
-- 5 个工具：`magpie_doctor`、`magpie_plugin_new`、`magpie_plugin_check`、`magpie_sandbox`（外加 `magpie_templates`、`magpie_registry_entry`、`magpie_plugin_accept`）；
+- 7 个工具：`magpie_doctor`、`magpie_plugin_new`、`magpie_plugin_check`、`magpie_sandbox`、`magpie_templates`、`magpie_registry_entry`、`magpie_plugin_accept`；
 - 8 个 skill：按「一类插件一个」拆开，模型只在需要时读；
 - 7 套模板：每种插件一个可以直接跑的最小实现，带测试；
 - 沙箱：一个不碰你自己 magpie 的独立 magpie。
@@ -83,11 +83,14 @@ Magpie 模式会：
 | `agent` | moejs | `{{short}}.test.mjs` |
 | `hooks` | Bun | `{{short}}.test.mjs` |
 
+每个模板还带一份 `.github/workflows/publish.yml`：本地改 `package.json` 的 `version`，提交，打 `v<版本>` tag 推上去，GitHub Actions 会核对 tag 和版本号、跑 `bun test`、带 provenance 发到 npm，再开一个 GitHub Release。第一个版本（`0.1.0`）要在本地手动发：npm 只给已经存在的包配 trusted publishing，所以带 `NPM_TOKEN` 手动 `npm publish --access public` 一次，再去 npm 包设置里配 trusted publisher，之后才交给 Actions。
+
 ## 命令
 
 ```sh
 node scripts/doctor.mjs                     # 这台机器能不能写插件
 node scripts/new-plugin.mjs --kind page --name @magpie-community/page-notes --dir ./notes
+node scripts/repo-handler.mjs ./notes          # 建仓库或更新已有仓库：公开、magpie-plugin topic、repository 指向
 node scripts/check-plugin.mjs <包目录>       # 退出码 1 表示 magpie 会拒绝加载
 node scripts/check-plugin.mjs <包目录> --load  # 再真的 import 它、调用它的插件函数
 node scripts/check-registry.mjs <包目录>      # 生成并校验 registry.json 条目
@@ -99,8 +102,6 @@ node scripts/try.mjs ./my-plugin            # 检查 + 沙箱 + 安装 + 列出�
 node scripts/accept-plugin.mjs ./my-plugin  # 沙箱里真装一次，读 magpie 说它加载到了什么
 node scripts/check-privacy.mjs . --all      # 扫一遍：有没有把开发者自己的路径/邮箱/密钥带出去
 node scripts/release.mjs ./my-plugin        # 发版前检查 + registry 条目 + 发布命令
-node scripts/check-project.mjs .            # 这个项目自己
-npm test                                    # 138 个测试
 ```
 
 ## 能力范围（装之前先看）
@@ -110,8 +111,9 @@ npm test                                    # 138 个测试
 | 能力 | 在哪 | 为什么 |
 |---|---|---|
 | 运行命令 | `lib/magpie.mjs` 起 magpie 进程 | `magpie_doctor`、`magpie_sandbox`、`scripts/*` 都要调 magpie 命令行 |
+| 建仓库 | `lib/repo.mjs` 调 `gh` 和 `git` | `repo-handler` 建仓库或更新已有仓库：公开、`magpie-plugin` topic、`repository` 指向 |
 | 读环境变量 | `lib/magpie.mjs`、`lib/doctor.mjs` | 找 `MAGPIE`、`PATH`、`XDG_*`、`HOME` |
-| 写文件 | `lib/scaffold.mjs`、`lib/sandbox.mjs`、`tools/index.js` | 生成插件包、建沙箱目录 |
+| 写文件 | `lib/scaffold.mjs`、`lib/sandbox.mjs`、`lib/repo.mjs`、`tools/index.js` | 生成插件包、建沙箱目录、改 `package.json` 的 `repository` |
 | 联网 | 只在 `templates/provider/` 的模板代码里 | 模板是给人看的示例，插件运行时不代发请求 |
 
 它**不**做这些：不往用户的 magpie 里装东西（那是用户自己点「安装」或自己跑 `magpie plugin add`）、不登录、不改 profile 的 `package.json`、不发任何遥测。
@@ -123,12 +125,12 @@ npm test                                    # 138 个测试
 ```
 index.js              Host 行（今天只占位，注册任何东西都在 ctx.effect 里）
 cordis.patch.yml      bundle patch：一个 Host 行 + 一个 magpie 预设
-tools/index.js        6 个工具，只挂进 magpie 预设
+tools/index.js        7 个工具，只挂进 magpie 预设
 lib/                  magpie 定位、包检查、加载检查、脚手架、沙箱、registry、doctor
 skills/               8 个 skill，只在这个包的 provider 下可见
 templates/            7 种插件的模板
 scripts/              命令行入口，和工具共用 lib/
-test/                 78 个测试
+test/                 150 个测试
 docs/                 更长的说明
 ```
 
@@ -141,7 +143,7 @@ docs/                 更长的说明
 | 包装得上、组合得出来 | 沙箱里 `rehearse` | installed and composed |
 | Magpie 模式注册了、是健康的 | 沙箱 `agentPresets/list` | `magpie`，没有 `broken` |
 | 模式能选 | 沙箱里新建任务的模式选择器 | 列出「magpie 模式」 |
-| 6 个工具都注册 | `test/tools.test.mjs` 对着 mock 上下文 | 16 个测试通过 |
+| 7 个工具都注册 | `test/tools.test.mjs` 对着 mock 上下文 | 19 个测试通过 |
 | 7 套模板都检查干净 | `test/scaffold.test.mjs` | 7 种，0 fail 0 warn |
 | 检查器和真包一致 | 跑社区仓库全部 65 个包 | 1 条，是真 bug |
 | 加载检查不误报 | 同上，加 `--load` | 同样只有那 1 条 |
